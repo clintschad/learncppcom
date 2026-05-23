@@ -1,0 +1,25 @@
+5/21/2026
+
+VSCode Setup for Mac
+
+https://code.visualstudio.com/docs/cpp/config-clang-mac
+
+Continue reading learncpp section 0.10
+
+https://www.learncpp.com/cpp-tutorial/configuring-your-compiler-compiler-extensions/
+
+TODO:
+Put this in personal repo
+Add VSCode notes
+* Place link to setup
+* Place keyboard shortcuts
+    - Run command from top bar = Shift + CMD/Ctrl + P
+    - Toggle terminal = CMD + `
+    - Bring up explorer pane = Shift + Ctrl + E
+
+
+NOTES
+* Compile - build a single source file into an object file. Does not invoke linker or generate executable.
+* Build - compile all source files into object files and link them to generate executable
+* Clean - remove cached object files and executable
+* Rebuild - Clean and Build
