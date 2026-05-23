@@ -1,2 +1,2 @@
 # learncppcom
-Reviewing C++ by going through tutorials on learncpp.com
+C++ review using [www.learncpp.com](https://www.learncpp.com/)
