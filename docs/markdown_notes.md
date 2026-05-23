@@ -6,7 +6,7 @@
 ## Misc
 It appears Markdown and Latex can be used in either file, i.e. you can use Markdown in a Latex file, and you can use Latex in a Markdown file. Below, Latex is being used in this Markdown file.
 
-The matrix below is rendered nicely in VSCode, but not on GitHub.
+The matrix below is rendered nicely in VSCode, but not on Github.
 
 The _identity_ matrix is 
 $$
