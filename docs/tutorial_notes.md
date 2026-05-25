@@ -105,3 +105,16 @@ int a = 5, b = 5;          // correct: a and b are initialized to 5
 
 * Use [[maybe_unused]] to tell compiler variable might not be used so compiler doesn't generate warnings or errors.
 
+### I/O Library
+* _cout_ stands for _character output_
+* `std::endl` is inefficient in that it flushes the buffer. When possible, use `\n`.
+* It is possible to read multiple values with one `cin` statement:
+
+```
+std::cin >> x >> y; // get two numbers and store in variable x and y respectively
+std::cout << "You entered " << x << " and " << y << '\n';
+```
+
+* `cin` uses an _input buffer_. Values entered are stored in here. For example, if the program is reading in input from the keyboard, and `5a 3` is entered in, the input buffer will contain `5a 3\n`. The `\n` is the enter from the keyboard. As the program parses through the input buffer, whitespace such as spaces, tabs, and newlines are discarded. If the input buffer is `5a 3\n` and the program is reading in input for two integers, such as `cin >> x >> y;`, `5` will be assigned to `x` and `5` removed from the input buffer. Now the input buffer is `a 3\n`. Next in the buffer is `a`, but since this cannot be assigned to integer `y`, `y` is instead assigned `0`. The input buffer remains at `a 3\n`.
+* If `cin` is being used to assign an integer variable, and a number larger than it can hold is entered, the variable will be assigned the max value it can hold. Here, for a 32 bit integer, `2147483647` is the largest positive value is can hold.
+* For an input buffer assigning a value to an integer, the `+` sign is valid. For example, if the input buffer is `+5` and it is to assign an integer variable the value, the variable will be assigned the value `5`. This is similar to how the negative sign `-` is also valid for integers.
