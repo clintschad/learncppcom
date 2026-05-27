@@ -118,3 +118,59 @@ std::cout << "You entered " << x << " and " << y << '\n';
 * `cin` uses an _input buffer_. Values entered are stored in here. For example, if the program is reading in input from the keyboard, and `5a 3` is entered in, the input buffer will contain `5a 3\n`. The `\n` is the enter from the keyboard. As the program parses through the input buffer, whitespace such as spaces, tabs, and newlines are discarded. If the input buffer is `5a 3\n` and the program is reading in input for two integers, such as `cin >> x >> y;`, `5` will be assigned to `x` and `5` removed from the input buffer. Now the input buffer is `a 3\n`. Next in the buffer is `a`, but since this cannot be assigned to integer `y`, `y` is instead assigned `0`. The input buffer remains at `a 3\n`.
 * If `cin` is being used to assign an integer variable, and a number larger than it can hold is entered, the variable will be assigned the max value it can hold. Here, for a 32 bit integer, `2147483647` is the largest positive value is can hold.
 * For an input buffer assigning a value to an integer, the `+` sign is valid. For example, if the input buffer is `+5` and it is to assign an integer variable the value, the variable will be assigned the value `5`. This is similar to how the negative sign `-` is also valid for integers.
+
+### Variable Initialization
+Three types of initialization:
+* Initialized = The object is given a known value at the point of definition.
+* Assignment = The object is given a known value beyond the point of definition.
+* Uninitialized = The object has not been given a known value yet.
+
+Misc
+* Always initialize variables unless there's a specific reason not to.
+* Undefined Behavior (UB). In the uninitialization example, this has undefined behavior because the language doesn't have clear rules on how this is handled and thus the behavior is actually undefined.
+* Implementation-defined behavior - where the C++ language standard gives freedom to how something should be implemented and the compiler does this. Size of the integer type (2 vs 4 bytes) is an example.
+* Avoid both UB and implementation-defined behavior.
+
+### C++ Keywords
+* Aka _reserved words_
+* 92 keywords as of C++23
+* C++ also has special identifiers: override, final, import, and module. They have a specific meaning in certain contexts, but are not reserved otherwise.
+* _identifier_ is the name of a function, type, or other kind of item.
+
+#### Identifier naming conventions
+* Variable and function names begin with a lower letter
+* User-defined types like structs, classes, enums begin with capital letter.
+* For multiword identifiers/names, use _snake_case_ or _camelCase_.
+* Avoid startning a name with an underscore. Though allowed, this is reserved for OS, library, and/or compiler use.
+* Other variable naming guides:
+    - An identifier that exists for only a few statements (e.g. in the body of a short function) can have a shorter name.
+    - An identifier that is accessible from anywhere might benefit from a longer name.
+    - An identifier that represents a non-specific number (e.g. anything the user provides) can have a shorter name.
+    - An identifier that represents a specific value (e.g. the length of an inseam in millimeters) should have a longer name.
+
+### Formatting
+* Preprocessor directives must go on separate lines.
+* C++ is a whitespace-independent language. It does not force restrictions on formatting.
+* Consider keeping line lengths to 80 chars or less.
+
+### Literals
+* Values that are defined and can be assigned to variables are _literals_. `5` and `hello` are literals. Note they are not the variables themselves and they are constant. In other words, they are values inserted directly inot the source code.
+
+### Operations, operators, and operands
+* _Operation_ - process involving input values called _operands_ to produce an output value. The operation is defined by the symbol called the _operator_. In `3 + 2`, `3` and `2` are _operands_ and `+` is the _operator_. The output of an operation is called a _return value_.
+* The following are also _operators_: `=`, `<<`, `>>`, `==`, `new`, `delete`, `throw`.
+* _Arity_ - number of operands an operator can take as input.
+    - _Unary_ - one operand, e.g. negative sign `-` like `-1`.
+    - _Binary_ - two operands. For example, in `3 + 4`, the `+` operator is acting on two operands. Other examples are `<<` and `>>` that use `std:cout` or `std:cin` on one side and a string on the other.
+    - _Ternary_ - three operands. The only one in C++ is the ternary conditional operator.
+    - _Nullary_ - zero operands. The only one in C++ is the `throw` operator.
+* Side effect - an effect from an operation that's not the direct output result, e.g. void functions.
+
+### Expressions
+* _Expression_ - Non-empty sequence of literals, variables, operators, and function calls that produce a single output value.
+* _Evaluation_ is executing an _expression_.
+* The _result_ of an _evaluation_ is sometimes called the _return value_.
+* Expressions can't standalone and end in a semi-colon. Rather, they can be used in statements. These are called _expression statements_. For example, `int x{2+3};` is an expression statement and `2+3` is an expression.
+* _Subexpression_ - expression used as an operand. For example, in `x = 4 + 5`, `x` and `4 + 5` are subexpressions.
+* _Full expressions_ - expression that is not a subexpression. `x = 4 + 5` is a full expression.
+* _Compound expression_ - expression that contains two or more operators. `x = 4 + 5` is a compound expression due to the `=` and `+` operators.
