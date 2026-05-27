@@ -4,6 +4,12 @@
 Continue with section 0.10
 
 ## Chapter 0
+### Build process
+* Compile - build a single source file into an object file. Does not invoke linker or generate executable.
+* Build - compile all source files into object files and link them to generate executable
+* Clean - remove cached object files and executable
+* Rebuild - Clean and Build
+
 ### Compiler Setup
 * To keep compliant with C++ standards, use the `-pedantic-errors` compiler flag and ensure a newline is at the bottom of every code file. If using VSCode, see instructions for that IDE.
 * Can vary the warning level of the compiler by using certain compiler flags like `-Wall` or `Wextra`.
