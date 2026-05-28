@@ -180,3 +180,44 @@ Misc
 * _Subexpression_ - expression used as an operand. For example, in `x = 4 + 5`, `x` and `4 + 5` are subexpressions.
 * _Full expressions_ - expression that is not a subexpression. `x = 4 + 5` is a full expression.
 * _Compound expression_ - expression that contains two or more operators. `x = 4 + 5` is a compound expression due to the `=` and `+` operators.
+
+## Chapter 2
+### Functions
+* _Function_ - a __reusable__ sequence of statements.
+* _User-defined functions_ - functions in application, not defined by library.
+* Structure of a function
+```
+returnType functionName() // This is the function header (tells the compiler about the existence of the function)
+{
+    // This is the function body (tells the compiler what the function does)
+}
+```
+* Even if function has no input parameters, must include the empty parentheses when it is called, e.g. `doPrint();` not `doPrint;`.
+* A function cannot be defined inside another function.
+* _Function header_ - initial line of function, containing return type, name, and parameters. Does not end in semicolon (this is the prototype).
+* _Return by value_ - return a copied value back to the caller
+* Functions with a return type must return a value, otherwise this may result in undefined behavior.
+* The only exception is main, which will implicitly return 0 if no return is defined.
+* Functions can only return a single value, though there are workarounds to return more data.
+* Functions can return status codes to indicate proper/improper operation, calculated values, or nothing. It is good practice to comment what the return is above the function header.
+
+#### Main
+* Must return an `int`
+* Program cannot call `main()`
+* Main not necessarily the first function to execute. Global variables are initialized before main and can be initialized by a function, so these functions can execute before main.
+* Usually returns 0 if program ran normally.
+* C++ standard defines status codes `0`, `EXIT_SUCCESS`, and `EXIT_FAILURE`. `0`, `EXIT_SUCCESS` mean the program executed successfully, while `EXIT_FAILURE` means it didn't. These can be used to maximize portability.
+
+#### Function Parameters
+* _Argument_ - the actual value instances the caller uses when calling the function.
+* _Pass by value_ - value of each arg is copied into the matching parameter.
+* A unused function parameter can be softly removed by keeping the parameter type but removing the name, e.g. `void doSomething(int /*count*/)`. Note here the name is present but commented out; this is good practice. This keeps the function call the same, but tells the compiler the parameter is unused in the function. This is sometimes done if the function is changed, but you don't want or can't update all the function calls.
+
+### Local Scope
+#### Local Variables
+* Local variables are variables defined in a function body.
+* Function parameters are also considered local variables.
+* _Scope_ - where in the source code the identifier (func/variable) can be seen and used.
+* _Local scope_ - also called _block scope_, means the identifier is defined within a set of braces and thus can only be seen between these braces.
+
+# START AT SECTION 2.5 "Out of scope” vs “going out of scope”
