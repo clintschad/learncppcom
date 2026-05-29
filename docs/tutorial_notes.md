@@ -200,6 +200,11 @@ returnType functionName() // This is the function header (tells the compiler abo
 * The only exception is main, which will implicitly return 0 if no return is defined.
 * Functions can only return a single value, though there are workarounds to return more data.
 * Functions can return status codes to indicate proper/improper operation, calculated values, or nothing. It is good practice to comment what the return is above the function header.
+* Best practice is to give a function only one task. For example, rather than a function calculate a value from inputs and print the result, break this into two functions: one to calculate the value and another to print the value.
+* _Forward declaration_ - a statement definition for a function's return type, name, and inputs, to allow the function to be used before the body is defined. The body is defined later. Same as _function prototype_.
+* Declaration vs definition - declaration tells the compiler the existence of an identifier. Definition implements (for functions and types) or instantiates (for variables).
+* You technically don't need the parameter names in the function declaration, just the parameter types. However, it is best practice to include the parameter names for readability and understanding.
+* In C++, it is possible to have multiple functions of the same name, as long as the input parameter type list is different (different order or different number). This is [_function overloading_](https://en.wikipedia.org/wiki/Function_overloading).
 
 #### Main
 * Must return an `int`
@@ -213,11 +218,11 @@ returnType functionName() // This is the function header (tells the compiler abo
 * _Pass by value_ - value of each arg is copied into the matching parameter.
 * A unused function parameter can be softly removed by keeping the parameter type but removing the name, e.g. `void doSomething(int /*count*/)`. Note here the name is present but commented out; this is good practice. This keeps the function call the same, but tells the compiler the parameter is unused in the function. This is sometimes done if the function is changed, but you don't want or can't update all the function calls.
 
-### Local Scope
-#### Local Variables
+#### Scope and Local Variables
 * Local variables are variables defined in a function body.
 * Function parameters are also considered local variables.
 * _Scope_ - where in the source code the identifier (func/variable) can be seen and used.
 * _Local scope_ - also called _block scope_, means the identifier is defined within a set of braces and thus can only be seen between these braces.
+* It's best practice to __define local variables as close to their first use__ as reasonable. The old way was to define them at the top of the function. However, it's more difficult to see when a variable is used this way.
 
-# START AT SECTION 2.5 "Out of scope” vs “going out of scope”
+# START WITH SECTION 2.8
