@@ -2,6 +2,7 @@
 
 ## Configuration
 * [VSCode Setup for Mac](https://code.visualstudio.com/docs/cpp/config-clang-mac)
+* To have VSCode compile all .cpp files in the directory, go to _tasks.json_ and replace `"${file}"` with `"${fileDirname}/**.cpp"`
 
 ## Keyboard Shortcuts
 * Run command from top bar: `Shift + Ctrl + P`
