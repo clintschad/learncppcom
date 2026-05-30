@@ -225,4 +225,5 @@ returnType functionName() // This is the function header (tells the compiler abo
 * _Local scope_ - also called _block scope_, means the identifier is defined within a set of braces and thus can only be seen between these braces.
 * It's best practice to __define local variables as close to their first use__ as reasonable. The old way was to define them at the top of the function. However, it's more difficult to see when a variable is used this way.
 
-# START WITH SECTION 2.8
+### Programs With Multiple Files
+* C++ is designed so each source is compiled independently, and thus order of file compilation doesn't matter.
