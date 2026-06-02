@@ -282,7 +282,7 @@ returnType functionName() // This is the function header (tells the compiler abo
 #ifndef SOME_UNIQUE_NAME
 #define SOME_UNIQUE_NAME
 
-// Declarations a certain definitions here
+// Declarations of certain definitions here
 
 #endif
 ```
@@ -292,5 +292,5 @@ returnType functionName() // This is the function header (tells the compiler abo
 * This is to prevent header files from being included multiple times by a cpp, which can result in identifier/naming conflicts. Note that this is per .cpp file. Once a .cpp file is done being compiled, the process is restarted for the next .cpp file.
 * Another option to header guards is `#pragma once`.
 
-#### Designing the program
+### Designing the program
 * When creating the outline (architecting) the program, functions that are not yet implemented can either be commented out or use empty function bodies (called _stubbing out_).
