@@ -183,6 +183,7 @@ Misc
 
 ## Chapter 2
 ### Functions
+* _DRY_ - Acronym for _Don't Repeat Yourself_
 * _Function_ - a __reusable__ sequence of statements.
 * _User-defined functions_ - functions in application, not defined by library.
 * Structure of a function
@@ -227,3 +228,69 @@ returnType functionName() // This is the function header (tells the compiler abo
 
 ### Programs With Multiple Files
 * C++ is designed so each source is compiled independently, and thus order of file compilation doesn't matter.
+* If identifiers conflict within the same file (e.g. two functions of the same name have different function bodies) a compiler issue will occur. If the functio bodies are within different files, a linker error will occur.
+
+#### Scope and Namespace
+* Can have same identifiers (function and variable names) if they're in different namespaces.
+* Global scope is also called global namespace
+    - okay to have functions in this namespace
+    - discouraged to use variables (global variables) in this namespace
+* `std` is a non-global namespace.
+* In `std::cout`, `::` is called the _scope resolution_ operator. The identifier to the left of `::` identifies the namespace the identifier on the right is a part of. Another way of reading `std::cout` is the `cout` declared in the namespace `std`. Also in this example, `std::` is called the namespace prefix. `cout` is called the _qualified name_.
+* The `using` directive allows use of identifiers within a namespace without having to use the namespace prefix. However, this is discouraged and using the namespace prefix is preferred.
+
+### Preprocessor
+* After the preprocessor has processed a code file, the result is called a _translation unit_.
+* Each translation unit include a single .cpp file and all header files it includes (including recursively included include files since header files can include other header files.)
+* _Preprocessor directives_ can also be just called _directives_.
+* Macro preprocessor directives should be all uppercase with words separated by underscores.
+* Avoid using "object-like macros with substitution text" (e.g. `#define MY_NAME "Clint"`).
+* Conditional compilation directives like `#ifdef`, `#ifndef`, `#endif` are okay to use.
+* Can use `#if 0` to funtionally comment out code and `#if 1` to re-enable it.
+* Try to use #define identifiers outside of functions.
+* Remember that directives in one file aren't used in another. For files to use a directive, they should include the same file that contains the directive to be shared.
+
+### Header Files
+* While .h is the preferred file extension for C++ header files, .hpp or no extension can be used.
+* Header files usually contain related forward declarations.
+* Header files are usually paired with the corresponding code file.
+* For now, don't put function and variable definitions in header files. This causes the definitions to be defined everywhere the header is included, which will work for compilation but results in definitions in multiple places rather than one place.
+* Later, will use inline function, inline variables, types, and templates in header files.
+* The corresponding source file (.cpp) should include its paired header file, so errors are caught at compile time and not later at the linking stage.
+* When including header files, angled brackets indicate system files located in the include directories as defined by the OS or compiler. Quotes indicate files we've written and indicate the current (or project?) folders.
+* `#include` standard library header files without .h extension and user-defined header files with .h extension.
+* Do not use relative paths when including header files. If path changes, path needs to be updated or compile won't work. Use IDE (or build system like CMake) build setting. So if folder structure of project ever changes, only a setting in IDE needs adjusting instead of all code files.
+* Transitive / recursive header file - try to explicitly include the header files necessary for compilation rather than relying on the include from another header file. If the header file down the chain doesn't include the header file you need, you'll need to explicitly include it anyway.
+* Order of including header files:
+    - the paired header file for the .cpp file (e.g. include add.h in add.cpp)
+    - headers from the same project (e.g. `#include "mymath.h"`)
+    - 3rd party library headers (e.g. `#include <boost/tuple/tuple.hpp>`)
+    - Standard library headers (.e.g. `#include <iostream>`)
+* Best practices:
+    - Always include header guards (we’ll cover these next lesson).
+    - Do not define variables and functions in header files (for now).
+    - Give a header file the same name as the source file it’s associated with (e.g. grades.h is paired with grades.cpp).
+    - Each header file should have a specific job, and be as independent as possible. For example, you might put all your declarations related to functionality A in A.h and all your declarations related to functionality B in B.h. That way if you only care about A later, you can just include A.h and not get any of the stuff related to B.
+    - Be mindful of which headers you need to explicitly include for the functionality that you are using in your code files, to avoid inadvertent transitive includes.
+    - A header file should #include any other headers containing functionality it needs. Such a header should compile successfully when #included into a .cpp file by itself.
+    - Only #include what you need (don’t include everything just because you can).
+    - Do not #include .cpp files.
+    - Prefer putting documentation on what something does or how to use it in the header. It’s more likely to be seen there. Documentation describing how something works should remain in the source files.
+
+#### Header Guards
+```
+#ifndef SOME_UNIQUE_NAME
+#define SOME_UNIQUE_NAME
+
+// Declarations a certain definitions here
+
+#endif
+```
+* How it works:
+    - If `SOME_UNIQUE_NAME` exists, the compiler skips down to `#endif`, not including the file.
+    - If `SOME_UNIQUE_NAME` doesn't exist, the compiler defines the name and includes the contents of the file.
+* This is to prevent header files from being included multiple times by a cpp, which can result in identifier/naming conflicts. Note that this is per .cpp file. Once a .cpp file is done being compiled, the process is restarted for the next .cpp file.
+* Another option to header guards is `#pragma once`.
+
+#### Designing the program
+* When creating the outline (architecting) the program, functions that are not yet implemented can either be commented out or use empty function bodies (called _stubbing out_).
