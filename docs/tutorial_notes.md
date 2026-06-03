@@ -294,3 +294,24 @@ returnType functionName() // This is the function header (tells the compiler abo
 
 ### Designing the program
 * When creating the outline (architecting) the program, functions that are not yet implemented can either be commented out or use empty function bodies (called _stubbing out_).
+
+## Chapter 3 - Debugging
+### Debug Print Statements
+* [dbg-macro](https://github.com/sharkdp/dbg-macro/tree/master) - header only file that makes it easier to print out debug code and will not compile for release.
+* Use `std:cerr` when printing debug code. This prints the buffer immediately, while `std::cout` may not.
+* Don't indent debug print code to make it easier to see and revert when done debugging.
+* Can enclose debug print statements with preprocessor directives so they can be enabled/disabled, e.g.
+```
+#ifdef ENABLE_DEBUG
+std::cerr << "getUserInput() called\n";
+#endif
+```
+* Using the example above, `#define ENABLE_DEBUG` coudl be placed in a header file that could be included in any/all source files. Then commenting/uncommenting that line in that header file would enable/disable all debug print statements throughout all the source files that use this method.
+
+### Debug Logger
+* Places print statements with timestamps and line numbers in a log file.
+* Can use a C++ `std::clog`, but it is recommended to use a third party logging tool, such as [plog](https://github.com/SergiusTheBest/plog).
+* Easy to enable/disable plog.
+* Can use [spdlog](https://github.com/SergiusTheBest/plog) for larger or performance-sensitive projects.
+
+### Integrated Debugger
