@@ -306,12 +306,11 @@ returnType functionName() // This is the function header (tells the compiler abo
 std::cerr << "getUserInput() called\n";
 #endif
 ```
-* Using the example above, `#define ENABLE_DEBUG` coudl be placed in a header file that could be included in any/all source files. Then commenting/uncommenting that line in that header file would enable/disable all debug print statements throughout all the source files that use this method.
+* Using the example above, `#define ENABLE_DEBUG` could be placed in a header file that could be included in any/all source files. Then commenting/uncommenting that line in that header file would enable/disable all debug print statements throughout all the source files using this method.
 
 ### Debug Logger
 * Places print statements with timestamps and line numbers in a log file.
-* Can use a C++ `std::clog`, but it is recommended to use a third party logging tool, such as [plog](https://github.com/SergiusTheBest/plog).
+* Can use C++ `std::clog`, but it is recommended to use a third party logging tool, such as [plog](https://github.com/SergiusTheBest/plog).
 * Easy to enable/disable plog.
 * Can use [spdlog](https://github.com/SergiusTheBest/plog) for larger or performance-sensitive projects.
 
-### Integrated Debugger
