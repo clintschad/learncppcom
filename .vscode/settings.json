@@ -41,7 +41,7 @@
   "C_Cpp_Runner.compilerArgs": [
     "-std=c++23",
     "-fdiagnostics-color=always",
-    "-pedantic-errors",
+    "-pedantic-errors"
   ],
   "C_Cpp_Runner.linkerArgs": [],
   "C_Cpp_Runner.includePaths": [],
