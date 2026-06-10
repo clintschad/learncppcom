@@ -314,3 +314,32 @@ std::cerr << "getUserInput() called\n";
 * Easy to enable/disable plog.
 * Can use [spdlog](https://github.com/SergiusTheBest/plog) for larger or performance-sensitive projects.
 
+### Debugger
+* Step out - executes all remaining code in the function and returns to the caller.
+* Step back - not many debuggers have this feature.
+* Set next statement - also called _jump to cursor_ in VSCode. This is different from _run to cursor_ in that it skips running the code from the current line to the target line.
+    - _set next statement_ can be useful in jumping over code you would normally comment out.
+    - It can also be used to jump back to re-execute and watch certain code run again. Be aware that unlike a _step back_ where the program's state is rewound (variables revert back to their previous state before execution), this does not occur in _set next statement_ or _jump to cursor_, so results may become incorrect. __Use judicously__.
+* Can inspect variables in a _variable_ window and also by hovering cursor over the variable. Can also use a _watch window_ of preselected variables to monitor these variables.
+* Can break on variable in watch window changing.
+* Can run small expressions (like x + 2) in the watch window
+* Can highlight expressions in code and add to watch window which will evaluate and show the result
+* _Call stack window_ - all active functions that have been called to get to the current point of execution.
+    - contains each line of code that will be returned to when the function returns.
+    - is useful to know which functions were called to get to the current place of execution.
+
+### Catching issues early before they get worse
+* This is making structural changes to the code without affecting its behavior.
+* Functions that take up more than a vertical screen's worth of lines should be broken up to multiple shorter functions.
+* Can use `assert` and `static assert` which will be discussed in more detail in section 9.6.
+* Static analysis tools - analyze code without executing it.
+    - compiler
+    - linter
+    - [Wikipedia list of C++ static analysis tools](https://en.wikipedia.org/wiki/List_of_tools_for_static_code_analysis#C,_C++)
+    - some free ones are
+        - [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
+        - [cpplint](https://github.com/cpplint/cpplint)
+        - [cppcheck](https://cppcheck.sourceforge.io/) (integrated into Code::Blocks)
+        - [SonarLint](https://www.sonarsource.com/open-source-editions/)
+*  Static analysis tools are highly recommended for larger complex programs. 
+
