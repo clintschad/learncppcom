@@ -343,3 +343,44 @@ std::cerr << "getUserInput() called\n";
         - [SonarLint](https://www.sonarsource.com/open-source-editions/)
 *  Static analysis tools are highly recommended for larger complex programs. 
 
+## Chapter 4 - Data Types
+* Primitive types - default data types of the language. Also called _fundamental data types_ or _basic types_. Some examples are below:
+    - wchar_t
+    - chart_t, char16_t, char32_t
+    - std::nullptr
+* The `_t` suffix usually designates _type_, though this isn't always applied, such as the fundamental types, e.g. `int`.
+* While permitted, avoid using void in function parameter list:
+```
+int getValue(void) // C way. Avoid in C++.
+{
+    // do stuff
+}
+int getValue()     // C++ way. Preferred.
+{
+    // do stuff
+}
+```
+* Can use `static_assert` to check the minimum size of a data type, e.g. that `int` is at least 4 bytes. Compile will fail if not true.
+* Can also use the `sizeof` operator on a data type directly, e.g. `sizeof(int)`, to check data type size on machine. However, `sizeof` does not work on `void` or dynamically allocated memory used by an object.
+* `sizeof` also works on variables.
+* Use `short` instead of `short int` and `long` instead of `long int`. Use shorthand types that don't use the `int` suffix or `signed` prefix.
+* Range of signed data type is $-2^{n-1}$ to $2^{n-1}-1$.
+* Range of unsigned data type is $0$ to $2^{n}-1$.
+* Behavior is undefined if assigning a variable a value that is out of range, e.g. 258 to a uint8. This case specifically is called _overflow_.
+* For integer division, the fractional part is dropped, e.g. 8/5 = 1.
+* The result of unsigned integer overflow is the value % sizeof(data_type), e.g. 257 = 257 % 256 = 1. This can be thought of wrapping around from the greatest bound to the smallest bound.
+* Wrap around can also occur the other way. For example, `uint8 x{-1};` results in x having the value -1.
+
+### Issues using signed and unsigned values together
+* When an unsigned and signed variable are in a operation (arithmetic or comparison), the signed variable is converted to unsigned and the result is unsigned.
+
+### C++ Fixed Width Integers
+* Since C++ only guarantees the minimum number of bytes a data type is (e.g. `int` is at least 2 bytes but could be 4), there are _fixed width_ integers that are part of the standard library that guarantee the number of bytes. Example: `std::int32_t` is always 4 bytes. Need to `#include <cstdint>`.
+    - However and unfortuanately, C++ treats `std:int8_t` and `std::uint8_t` like chars.
+    - Not all architectures support these fixed-width integers.
+* On some systems, sometimes smaller width types are slower to process (e.g. 16 bit) than a wider type (e.g. 32 bit). For this, C++ has _fast_ and _least_ data types, such as `std::int_least32_t` and `std::int_fast32_t`.
+    - `std::int_least32_t` means it's guaranteed to be at least 32 bit, but might not be the fastest implementation
+    - `std::int_fast32_t` means it's guaranteed to be the fastest data type that has at least 32 bits. For example, if the system can process 64 bit values faster, this might actually be a 64 bit value.
+    - The downside to this is possibly more memory usage.
+* In general, avoid _fast_ and _least_ integral types.
+* The return type of the `sizeof` function is `std::size_t`. On most systems, this is the memory-address width, so 32 on 32 bit systems and 64 on 64 bit systems.
