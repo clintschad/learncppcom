@@ -374,7 +374,7 @@ int getValue()     // C++ way. Preferred.
 ### Issues using signed and unsigned values together
 * When an unsigned and signed variable are in a operation (arithmetic or comparison), the signed variable is converted to unsigned and the result is unsigned.
 
-### C++ Fixed Width Integers
+### C++ Fixed width integers
 * Since C++ only guarantees the minimum number of bytes a data type is (e.g. `int` is at least 2 bytes but could be 4), there are _fixed width_ integers that are part of the standard library that guarantee the number of bytes. Example: `std::int32_t` is always 4 bytes. Need to `#include <cstdint>`.
     - However and unfortuanately, C++ treats `std:int8_t` and `std::uint8_t` like chars.
     - Not all architectures support these fixed-width integers.
@@ -384,3 +384,66 @@ int getValue()     // C++ way. Preferred.
     - The downside to this is possibly more memory usage.
 * In general, avoid _fast_ and _least_ integral types.
 * The return type of the `sizeof` function is `std::size_t`. On most systems, this is the memory-address width, so 32 on 32 bit systems and 64 on 64 bit systems.
+
+### Scientific notation
+* For large numbers, scientific notation can be used. For example, the mass of Earth is $5.9722 \cdot 10^{24}$ kg. In code, this would be `5.9722e24` kg. Similarly, the mass of an electron is $9.1093837 \cdot 10^{-31}$ kg, and in code this is `9.1093837e-31` kg.
+* The more digits in the significand, the more precise the value, e.g. `3.14159e0` is more precise than `3.14e0`. The first has 6 significant figures, while the latter has 3.
+
+### Floating point numbers
+* `float`, `double`, and `long double`.
+* Avoid using `long double` since the number of bytes can vary between platforms.
+* For nearly all processors, `float` uses the 4-byte IEEE 754 single-precision format, and `double` uses the 8-byte IEEE 754 double-precision format.
+* `long double`, however, does [not follow a single standard convention](https://en.wikipedia.org/wiki/Long_double). For example, `long double` can use [x87 extended-precision](https://en.wikipedia.org/wiki/X87) (80 bit) or [IEEE 754 quadruple-precision](https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format#IEEE_754_quadruple-precision_binary_floating-point_format:_binary128) (128 bit).
+* When using floating point literals, always include at least one decimal place, even if the decimal is 0 to inform the compiler that the number if floating point and not an integer.
+
+```
+int a { 5 };      // 5 means integer
+double b { 5.0 }; // 5.0 is a floating point literal (no suffix means double type by default)
+float c { 5.0f }; // 5.0 is a floating point literal, f suffix means float type
+
+int d { 0 };      // 0 is an integer
+double e { 0.0 }; // 0.0 is a double
+```
+
+* Floating point literals usually default to type `double`. Use the `f` suffix to denote type `float`. For example, `0.0` is type `double`, but `0.0f` is type `float`.
+
+* Print floating values with `cout`:
+    - By default, prints floating point literals as integers, e.g. `5.0` will print out as `5`. To print the decimal places, use the `f` suffix, e.g. `5.0f` will print out as `5.0`.
+    - By default, prints with a precision of 6, i.e. shows 6 significant figures, e.g. `9.87654321f` when printed out is `9.87654`. Can use _output manipulators_ from `<iomanip>` such as `std::setprecision()` or `std::setw` to force `cout` to print the number of desired significant figures.
+    - Use `double` when possible to avoid rounding errors with `float`.
+
+* Rounding errors will occur when doing math operations with float and doubles since certain values can't be stored exactly and have a rounding error to begin with (e.g. 0.1 in binary). Need to be careful with doing comparisons as well.
+
+* IEEE 754 has additional values: Inf, NaN, and signed 0 (+0.0 and -0.0).
+
+### Boolean values
+* `bool` by default initializes to false, e.g. `bool myFlag{};` will initialize `myFlag` to `false`.
+* Boolean values print out as `0` or `1` instead of `true` or `false`.
+    - Can use `std::boolalpha` to print boolean values as `true` or `false`.
+* Can use `0` or `1` to initialized boolean variables, but should prefer to use `true` and `false`. Using a value greater than `1` may cause compiler errors.
+* Assigning values greater than `1` to a boolean varaible is equivalent to assigning `true` though this is discouraged.
+* Be careful assigning boolean variables using `std::cin`. For example, if user input is `3` and is assigned to a boolean, the boolean will be assigned `true` but `std::cin` will enter _failure mode_ (see section 9.5). If non-numeric values are entered, these will be interpreted as `false` and `std::cin` will enter _failure mode_ as well.
+    - Can use `std:boolalpha` to enter `true` or `false` for `std:cin`. Can turn this off using `std:noboolalpha`.
+
+### If statements
+* While early returns in functions were historically frowned upon, this is more accepted in modern programming if this makes the function simpler. Discussed more in section 8.11.
+
+### Chars
+* While chars can be initialized with integer literals, e.g. `char myChar{97};` this should be avoided.
+* When using `std::cin` to assign a value to a char, it will extract only one char from the input buffer. For example, if the user inputs `abcd` into the input buffer, the next call to `std::cin >> myChar` will extract `a` from  `abcd`, with `myChar` equal to `a` and the input buffer equal to `bcd`. If `std::cin >> myChar2` is called after this, the process would repeat, with `b` assigned to `myChar2` and the input buffer equal to `cd`.
+    - Leading white space is skipped and not extracted. For example, if the input buffer is `a b` and there are 2 successive `std::cin << ` calls assigning values to `char` variables, the first call will extract and assign `a` and the next call will skip the space, extract, and assign `b` the the second char variable.
+    - To also extract whitespace, use `std::cin.get()`
+* If more than one character needs to be read at a time, use a `string` type of variable.
+* There are various _escape sequence_ characters that assist in printing values, such as `\n` for a new line.
+* While allowed, avoid the following
+    - double quotes around single characters, e.g. `"\n"` `"\t"`
+    - multicharacter literals, e.g. `'56'`
+        - Easy to make this mistake. For example `std::cout << "The value of x is " << x << '!\n';` Here, `'!\n'` contains two literal characters, `!` and `\n` and this will cause the output to print out the incorrect numeric value. Can use double quotes here to fix the issue.
+
+### Type conversion and static_cast
+* An _okay_ implicit type conversion example: `print(5);` when the function prototype is `void print(double x);`. The integer literal `5` is implicitly converted to the float `5.0`. 
+* An unsafe implicit type conversion example: `print(5.5);` when the function prototype is `void print(int x);`. The float literal `5.5` is implicitly converted to the integer `5`, dropping the fractional part. Compilers will usually warn about possible loss of data.
+* To perform an _explicit type conversion_ or _type cast_, use the `static_cast` operator. An example of this expression is `static_cast<int>(x)`
+* Angled brackets `< >` in C++ indicate something needs a parameterizable type.
+* Most compilers treat `int8_t` and `uint8_t` as `char` and will `cout` them as ASCII characters. Use `static_cast` to force the compiler to treat and print as integer.
+* Using `cin` for these types can also be problem. For example, if the input buffer is `35` and `cin` is used to assign value to an `int8_t` or `uint8_t` variable, it will only extract the `3` and assign this to the variable. `3` in ASCII is numerically `51`, so the variable will equal `51` instead of the expected `35`.

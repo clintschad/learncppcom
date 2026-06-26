@@ -19,8 +19,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/clintonschad/Programming/repos/learncppcom/tutorials/ch0/compiler_ver",
-      "program": "/Users/clintonschad/Programming/repos/learncppcom/tutorials/ch0/compiler_ver/build/Release/outRelease"
+      "cwd": "/Users/clintonschad/Programming/repos/learncppcom/tutorials/ch4/4_x_quiz_3",
+      "program": "/Users/clintonschad/Programming/repos/learncppcom/tutorials/ch4/4_x_quiz_3/build/Release/outRelease"
     }
   ]
 }
