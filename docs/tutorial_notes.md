@@ -514,6 +514,7 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
     - `constexpr` _must_ be initialized at compile-time
 * `constexpr` functions evaluate at compile-time. This type of function can initialize `constexpr` and `const` objects. `constexpr` cannot be initialized by a non-`constexpr` type function, whereas `const` can since it can be initilized at run-time.
 * Prefer using `constexpr` and `constexpr` functions over macros, with the exception of header guards, build configurations, etc.
+* Avoid using `const` in pass-by-value function parameters and for function return values.
 
 #### Section 5.7: Introduction to std::string
 * While C-style strings can be used in C++, `std::string` and `std::stringview` are preferred because they're safer and easier to work with.
@@ -534,4 +535,30 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 ```
 * `constexpr` doesn't usually support `std::string`, especially in earlier C++ versions. Use `std::string_view` instead.
 
-Complete Section 5.7 quiz
+#### Section 5.8 - std::string_view
+* Initializing and copying strings are expensive, probably since they're ultimately char arrays. Passing a string by value to a function creates a copy of the string (or char array), which is expensive. If possible for any "read only" use of a string, use `std::string_view` since this prevents expensive string copying.
+* C-style and `string` will implicitly convert to `string_view` if function parameter is `string_view`. For example, for a function with a `string_view` parameter, if the function is called with a C-style string as the parameter, it will implicitly convert to `string_view`.
+* However, `string_view` will not implicitly convert to `string`. Can `static_cast` or initialize a `string` with a `string_view`.
+* To create `string_view` literals, append the `sv` suffix:
+```
+std::cout << "foo\n";   // no suffix is a C-style string literal
+std::cout << "goo\n"s;  // s suffix is a std::string literal
+std::cout << "moo\n"sv; // sv suffix is a std::string_view literal
+```
+* It's not necessary to initialize `string_view` objects with `string_view` literals, though this is fine. Initializing `string_view` objects with C-style strings is fine. Since C-style strings exist for the entirety of the program, you typically don't have to worry about the object that `string_view` is "looking at" being destroyed and thus resulting in undefined behavior.
+* Can use `constexpr` with `string_view` to create a true constant compile-time string.
+
+### Section 5.9 - std::string_view part 2
+* Be aware that the original object that `string_view` was initialized to can be changed and `string_view` won't be automatically updated. This invalidates the `string_view` object and _will_ result in undefined and unexpected behavior. This is why `string_view` is sometimes called a _dangling_ view.
+* If the `string` that `string_view` was initialized to has changed, `string_view` can be revalidated by setting it to the string object again.
+* Generally avoid using `string_view` as return type except if
+    - function returns a C-style string, since C-style strings exist for the entirety of the program.
+    - function is returning a `string_view` parameter that's being passed in.
+* Can modify the view of a `string_view` object. Note that the `string` that `string_view` is viewing is not modified, just `string_view`.
+    - `remove_prefix()` and `remove_suffix()` removes characters from the left side and from the right side respectively.
+    - To undo these affects on the `string_view` object, it will need to reassign it to the original `string` object.
+    - This is useful if just a substring of a string is needed.
+    - Because a `string_view` can view a substring of a null-terminated `string`, a `string_view` may not be null terminated.
+    - If for some reason a `string_view` that's not null-terminated needs to be null-terminated, convert it to a `string`.
+* Many useful reference notes at the end of this section on when to use `string` vs `string_view`.
+
