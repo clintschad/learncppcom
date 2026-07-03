@@ -447,3 +447,91 @@ double e { 0.0 }; // 0.0 is a double
 * Angled brackets `< >` in C++ indicate something needs a parameterizable type.
 * Most compilers treat `int8_t` and `uint8_t` as `char` and will `cout` them as ASCII characters. Use `static_cast` to force the compiler to treat and print as integer.
 * Using `cin` for these types can also be problem. For example, if the input buffer is `35` and `cin` is used to assign value to an `int8_t` or `uint8_t` variable, it will only extract the `3` and assign this to the variable. `3` in ASCII is numerically `51`, so the variable will equal `51` instead of the expected `35`.
+
+## Constants and Strings
+### Constant variables
+* Declaring const variables
+```
+const double gravity { 9.8 };  // preferred use of const before type
+int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
+```
+* Variable type includes `const` qualifier, so `const double gravity` is of type `const double`.
+* `const` variables must be initialized.
+* `const` can be used as a function parameter to guarantee that the function doesn't change that variable being passed in as a parameter. However, this is not preferred in modern C++ since the value is copied in anyway. When passing in parameters by reference or address, however, `const` may be used.
+* When returning objects by value, don't use `const`, e.g. don't use `const` in the return type of a function.
+* When possible, make variables `const`. This reduces bugs, allows compiler to optimize the program, and helps in debugging.
+* Prefer `const` over using preprocessor macros since macros don't follow scope rules and can't be seen in debugger.
+* `const` and `volatile` are the only _type qualifiers_ in C++.
+
+### Chapter 5 - Literals
+* A `literal` is an actual value, e.g. `5`, `true`, `3.4`, `"Hello, world!"`, etc
+* The literal `5` is interpreted as type `int`. If necessary to be interpreted as another type, can use a suffix like `f`, e.g `5f` will be interpreted as type `float` instead of `double`.
+* Most suffixes are not case sensitive, though there are exceptions like `s` (string) and `sv` (string view).
+* C-style string literals are const objects that are created at the start of the program and exist for the entirety of the program. However, `std::string` and `std::string_view` are temporary objects that can be created and destroyed while the program is running.
+
+#### Section 5.3 - Numeral systems (binary and hexadecimal)
+* Use prefix `0b` for binary literals (C++14 and newer). Can also use `'` as binary separator to make reading easier.
+* Use `std::hex` in conjunction with `std::cout` to print hex values.
+* The `std::bitset` type for binary variables can be used to print binary values using `std::cout`. However, with C++20, `std::format` can be used; with C++23, `std:println` can be used. 
+
+#### Section 5.4 - The as-if rule and compile-time optimization
+* Profiler - can be used to see how long parts of program take to run.
+* Compile time evaluation (optimization here):
+    - _constant folding_: replacing constant operands with the single equivalent constant operand
+    - _constant propagation_: replace variables that are always constant with the constant value
+    - _dead code eliminatin_: code that is executed but has no effect on the rest of the program
+* Use `const` to help the optimizer to determine when to use constant propagation.
+* Certain expressions must be able to be evaluated at compile time
+    - `constexpr` initilization
+    - non-type template argument
+    - length of `std::array` or C-style array
+* Fundamental _compile-time_ programming C++ features:
+    - `constexpr` variables and functions
+    - templates
+    - static_assert
+* Examples of _constant expressions_ that can be evaluated at compile-time:
+    - literals (e.g. `5`, `1.2`)
+    - operators with constant expression operands (e.g. `3+4`, `2*sizeof(int)`)
+    - const integer variables with a constant expression initializer (e.g. `const int x{5}`)
+    - constexpr variables
+    - constexpr function calls with constant expression arguments
+    - non-type template parameters (section 11.9)
+    - enumerators (section 13.2)
+    - type traits
+    - constexpr lambda expressions (section 20.6)
+* Examples of expressions that _cannot_ be used in constant expressions:
+    - non-const variables
+    - const non-integer variables, e.g. `const double d{1.2}`. Instead, define as a `constexpr` variable.
+    - return values of non-constexpr functions (even if value inside function is const)
+    - function parameters
+    - operators with operands that are not constant expressions (e.g. anything using `std::cout` since `std::cout` is not a constant expression)
+    - operators `new`, `delete`, `throw`, `typeid`, and `,` (comma operator)
+* Compiler is only _required_ to evaluate constant expressions at compile-time in contexts that _require_ a constant expression.
+* `constexpr` - like `const` but unlike `const`, can use it for decimal values, e.g. `constexpr double gravity{9.8};`. Not usually, but possible to use with function return values. See lesson _F.1 -- Constexpr functions_.
+* `const` vs `constexpr`
+    - once initialized, cannot be changed (applies to both types)
+    - `const` can be initialized at compile-time or run-time
+    - `constexpr` _must_ be initialized at compile-time
+* `constexpr` functions evaluate at compile-time. This type of function can initialize `constexpr` and `const` objects. `constexpr` cannot be initialized by a non-`constexpr` type function, whereas `const` can since it can be initilized at run-time.
+* Prefer using `constexpr` and `constexpr` functions over macros, with the exception of header guards, build configurations, etc.
+
+#### Section 5.7: Introduction to std::string
+* While C-style strings can be used in C++, `std::string` and `std::stringview` are preferred because they're safer and easier to work with.
+* `std::string` can vary in size which makes it easier to work with (can dynamically assign strings of different lengths) but also makes its usage slower.
+* When using `std::cin` with `std::string`, `cin` extracts characters up to the first white space. Use `std::getline()` to get multiple words separated by white space.
+* Use `std::ws` to ignore leading white space in the in put buffer. This is useful if `std::cin` is reading '`n'` from a previous keyboard entry where the input buffer now begins with `\n`. Note that `std::ws` is not preserved across calls, so this needs to be called everywhere it's needed.
+* The `>>` operator ignores leading whitespace but `std::getline` does not. Thus if `>>` is used before a `std::getline`, `std::ws` must be used with `std::getline` to force it to ignore the leading whitespace.
+* Use the string object's _member function_ `length` to get the length of a `std::string` object. Note that the null character is not included. Note that `std::string::length()` returns an unsigned value, but `std::ssize()` returns signed. Use `static_cast<int>` with `std::string::length()` to cast its return value to `int` if needed.
+* Initializing a `std::string` is expensive (HOW?)
+* Do not pass `std::string` by value, since it makes a copy. Use `std::string_view` instead.
+* A function should only return a `std::string` by value for a few reasons (since this makes an expensive copy); otherwise prefer `std::string_view` instead.
+* Use the `s` suffix and `std::string_literals` namespace for `std::string` literals; otherwise C-style string literals are made.
+```
+    using namespace std::string_literals; // easy access to the s suffix
+
+    std::cout << "foo\n";   // no suffix is a C-style string literal
+    std::cout << "goo\n"s;  // s suffix is a std::string literal
+```
+* `constexpr` doesn't usually support `std::string`, especially in earlier C++ versions. Use `std::string_view` instead.
+
+Complete Section 5.7 quiz
