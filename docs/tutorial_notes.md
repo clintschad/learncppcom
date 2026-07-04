@@ -448,7 +448,7 @@ double e { 0.0 }; // 0.0 is a double
 * Most compilers treat `int8_t` and `uint8_t` as `char` and will `cout` them as ASCII characters. Use `static_cast` to force the compiler to treat and print as integer.
 * Using `cin` for these types can also be problem. For example, if the input buffer is `35` and `cin` is used to assign value to an `int8_t` or `uint8_t` variable, it will only extract the `3` and assign this to the variable. `3` in ASCII is numerically `51`, so the variable will equal `51` instead of the expected `35`.
 
-## Constants and Strings
+## Chapter 5 - Constants and Strings
 ### Constant variables
 * Declaring const variables
 ```
@@ -463,18 +463,18 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 * Prefer `const` over using preprocessor macros since macros don't follow scope rules and can't be seen in debugger.
 * `const` and `volatile` are the only _type qualifiers_ in C++.
 
-### Chapter 5 - Literals
+### Section 5.2 - Literals
 * A `literal` is an actual value, e.g. `5`, `true`, `3.4`, `"Hello, world!"`, etc
 * The literal `5` is interpreted as type `int`. If necessary to be interpreted as another type, can use a suffix like `f`, e.g `5f` will be interpreted as type `float` instead of `double`.
 * Most suffixes are not case sensitive, though there are exceptions like `s` (string) and `sv` (string view).
 * C-style string literals are const objects that are created at the start of the program and exist for the entirety of the program. However, `std::string` and `std::string_view` are temporary objects that can be created and destroyed while the program is running.
 
-#### Section 5.3 - Numeral systems (binary and hexadecimal)
+### Section 5.3 - Numeral systems (binary and hexadecimal)
 * Use prefix `0b` for binary literals (C++14 and newer). Can also use `'` as binary separator to make reading easier.
 * Use `std::hex` in conjunction with `std::cout` to print hex values.
 * The `std::bitset` type for binary variables can be used to print binary values using `std::cout`. However, with C++20, `std::format` can be used; with C++23, `std:println` can be used. 
 
-#### Section 5.4 - The as-if rule and compile-time optimization
+### Section 5.4 - The as-if rule and compile-time optimization
 * Profiler - can be used to see how long parts of program take to run.
 * Compile time evaluation (optimization here):
     - _constant folding_: replacing constant operands with the single equivalent constant operand
@@ -516,7 +516,7 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 * Prefer using `constexpr` and `constexpr` functions over macros, with the exception of header guards, build configurations, etc.
 * Avoid using `const` in pass-by-value function parameters and for function return values.
 
-#### Section 5.7: Introduction to std::string
+### Section 5.7: Introduction to std::string
 * While C-style strings can be used in C++, `std::string` and `std::stringview` are preferred because they're safer and easier to work with.
 * `std::string` can vary in size which makes it easier to work with (can dynamically assign strings of different lengths) but also makes its usage slower.
 * When using `std::cin` with `std::string`, `cin` extracts characters up to the first white space. Use `std::getline()` to get multiple words separated by white space.
@@ -535,7 +535,7 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 ```
 * `constexpr` doesn't usually support `std::string`, especially in earlier C++ versions. Use `std::string_view` instead.
 
-#### Section 5.8 - std::string_view
+### Section 5.8 - std::string_view
 * Initializing and copying strings are expensive, probably since they're ultimately char arrays. Passing a string by value to a function creates a copy of the string (or char array), which is expensive. If possible for any "read only" use of a string, use `std::string_view` since this prevents expensive string copying.
 * C-style and `string` will implicitly convert to `string_view` if function parameter is `string_view`. For example, for a function with a `string_view` parameter, if the function is called with a C-style string as the parameter, it will implicitly convert to `string_view`.
 * However, `string_view` will not implicitly convert to `string`. Can `static_cast` or initialize a `string` with a `string_view`.
@@ -562,3 +562,19 @@ std::cout << "moo\n"sv; // sv suffix is a std::string_view literal
     - If for some reason a `string_view` that's not null-terminated needs to be null-terminated, convert it to a `string`.
 * Many useful reference notes at the end of this section on when to use `string` vs `string_view`.
 
+## Chapter 6 - Operators
+### Section 6.1 - Operator Precedence and Associativity
+* If multiple operators are of the same level and near each other, they are grouped left to right, e.g. `7-4-1 ` becomes `(7-4)-1`.
+* See predecence/associativity chart in this section for reference when necessary.
+* Order of evaluating function arguments depends on the compiler. For example for `myFunc(x, y, z)`, Clang will evaluate `x`, `y`, and `z`. However, GCC will evaluate `z`, `x`, and `y`. This isn't an issue in this example, but suppose x, y, and z were function calls; then this could be an issue. In this case, explicitly assign the function calls (x, y, and z) before the larger `myFunc` function call, and place `x, y`, and z` in `myFunc`. See another example below.
+```
+printCalculation(getValue(), getValue(), getValue()); // this line is ambiguous
+
+int a{ getValue() }; // will execute first
+    int b{ getValue() }; // will execute second
+    int c{ getValue() }; // will execute third
+
+    printCalculation(a, b, c); // this line is now unambiguous
+```
+* The result of dividing two integers results in itself an integer with no fractional part, e.g. `7/4 = 1`.
+* To get a fractional division result, cast one or both operands as a floating type (`double` or `float`).
