@@ -578,3 +578,47 @@ int a{ getValue() }; // will execute first
 ```
 * The result of dividing two integers results in itself an integer with no fractional part, e.g. `7/4 = 1`.
 * To get a fractional division result, cast one or both operands as a floating type (`double` or `float`).
+
+### Section 6.4 - Increment and Decrement Operators 
+* prefix, e.g. `++x` or `--x`, are pretty straightforward: the `++` or `--` is evaluated.
+* postfix, e.g. `x++` or `x--`, can be trickier. The original copy of x is evaluated (e.g. if used in a function or initialization, the original value is used). Then, after that line, x has the updated value.
+* Prefix has better performance than postfix. Since prefix is simpler and more efficient, it is preferred to use prefix when possible.
+* Avoid statements where the variable is used and its modified form, e.g. ` x+ ++x`. Exceptions are `x += y`.
+
+### Section 6.5 - The Comma Operator
+* Has the lowest precedence of all operators.
+* Allows evaluation of multiple expressions where a single expression is allowed. The example below prints out `3`.
+```
+int x{ 1 };
+int y{ 2 };
+
+std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right operand
+```
+* However, due to how tricky and easy it is to make mistakes with this operator, it is preferred only to use the comma operator with `for` loops.
+
+### Section 6.6 - The Ternary/Conditional Operator
+* Can use the ternary operator to initialize constant expressions if the operands are constant.
+* Be careful with the operator order precedence of the ternary operator and operator near it, as this could cause the code to not work as you expect. Wrap the ternary expression with parentheses if in doubt.
+* The second and third operands of the ternary operator must match in type if it's not a fundamental type (okay to mix signed and unsigned values?). The compiler may try to do this for you, but it may have unexpected results.
+* Can throw exceptions with the second or third operand of the ternary operator.
+* If the first operand is a `constexpr`, use `if constexpr` instead of `(x ? y : z)`. `if constexpr` covered in section 8.4.
+* Avoid the ternary operator in complicated expressions.
+
+## Section 6.7 - Relational operators and floating point comparisons
+* Since floating point operations have some residual error, avoid using `==` and `!=` for comparing floating point variables that have undergone some mathematical process.
+* It is generally not safe to compare different types of float, e.g. `float` vs `double`.
+* This section has a decent algorithm for compariing floating type value as "close enough" using relative and absolute epsilons.
+
+## Section 6.8 - Logical Operators
+* Short circuit evaluation (when only the left operand in a conditional expression is evaluated) may cause the right operand to not be evaluated.
+    - Note that short circuit evaluation always occurs left to right and is an exception to the rule that operands may operate in any order.
+    - Only the built-in versions of the logical operators perform short-circuit evaluation. If these operators are overloaded to work with your own type, your overloaded operator will not perform short-circuit evaluation.
+* Be aware that logical operator AND has higher precedence than OR.
+    - Due to this, to avoid confusion, use explicit parentheses around AND expressions next to ORs to be more clear.
+* No logical exclusive or (XOR) in C++. Can use `!=` instead.
+* There are alternative keyword names for certain logical operators, such as those listed below. HOWEVER, use of these is discouraged.
+    - `and` for `&&`
+    - `or` for `||`
+    - `not` for `!`
+
+
