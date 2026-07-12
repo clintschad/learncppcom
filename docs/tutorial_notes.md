@@ -621,4 +621,31 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
     - `or` for `||`
     - `not` for `!`
 
+## Optional Chapter - Bit Manipulation
+### Section O.1 - Bit flags adn bit manipulation via std::bitset
+* `std::bitset` is fast for bit manipulation at the cost of memory. The size of a `std::bitset` is usually 32 bits on 32 bit machines or 64 bits on 64 bit machines.
+* Below are some useful member functions of std::bitset
+    - size() - number of bits
+    - count() - number of bits set
+    - all() - boolean for all bits set
+    - any() - boolean if any bits set
+    - none() - boolean for no bits set
 
+### Section O.2 - Bitwise operators
+* Use unsigned integer types or `std::bitset` type when doing bit manipulation. Do not perform bit manipulation on signed integer types.
+* Below is an example of operator loading of the bitshift `<<` operator:
+```
+std::cout << x << 1 << '\n'; // print value of x (0110), then 1
+std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
+```
+* Type promotion (increasing from a smaller type to a large type, e.g. from uint8 to uint16). If operands of a bitwise operator (`>>`, `<<`, `&`, `|`, `^`) are `unsigned short`, the operands will be promoted to `int` or `unsigned int`, including the result.
+* Be careful if using `std::bitset<x>` on `std::bitset<y>` when x and y are different sizes. Why would you even want to do this?
+
+### Section O.3 - Bit manipulation with bitwise operators and bit masks
+* Check if bit on/off using AND with appropriate bitmask.
+* Set bit on/off using OR with appropriate bitmask.
+* To clear a bit (set to 0), use AND and NOT together.
+* Flip/toggle a bit using XOR with appropriate bitmask.
+* To set, clear, or flip multiple bits, OR bitmasks together.
+* Instead of passing a long list of boolean parameters into a function, can use a single variable, where each bit is one of the boolean parameters. Can then use OR'd bitmasks to pass in only the boolean valuables we want.
+* Use `std::hex` to read in a input stream value as a hex value.
