@@ -376,7 +376,7 @@ int getValue()     // C++ way. Preferred.
 
 ### C++ Fixed width integers
 * Since C++ only guarantees the minimum number of bytes a data type is (e.g. `int` is at least 2 bytes but could be 4), there are _fixed width_ integers that are part of the standard library that guarantee the number of bytes. Example: `std::int32_t` is always 4 bytes. Need to `#include <cstdint>`.
-    - However and unfortuanately, C++ treats `std:int8_t` and `std::uint8_t` like chars.
+    - However and unfortunately, C++ treats `std:int8_t` and `std::uint8_t` like chars.
     - Not all architectures support these fixed-width integers.
 * On some systems, sometimes smaller width types are slower to process (e.g. 16 bit) than a wider type (e.g. 32 bit). For this, C++ has _fast_ and _least_ data types, such as `std::int_least32_t` and `std::int_fast32_t`.
     - `std::int_least32_t` means it's guaranteed to be at least 32 bit, but might not be the fastest implementation
@@ -649,3 +649,7 @@ std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
 * To set, clear, or flip multiple bits, OR bitmasks together.
 * Instead of passing a long list of boolean parameters into a function, can use a single variable, where each bit is one of the boolean parameters. Can then use OR'd bitmasks to pass in only the boolean valuables we want.
 * Use `std::hex` to read in a input stream value as a hex value.
+
+### Section O.4 - Converting integers between binary and decimal representation
+
+Complete Question 6
