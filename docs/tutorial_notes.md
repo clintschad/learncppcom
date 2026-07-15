@@ -604,12 +604,12 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
 * If the first operand is a `constexpr`, use `if constexpr` instead of `(x ? y : z)`. `if constexpr` covered in section 8.4.
 * Avoid the ternary operator in complicated expressions.
 
-## Section 6.7 - Relational operators and floating point comparisons
+### Section 6.7 - Relational operators and floating point comparisons
 * Since floating point operations have some residual error, avoid using `==` and `!=` for comparing floating point variables that have undergone some mathematical process.
 * It is generally not safe to compare different types of float, e.g. `float` vs `double`.
 * This section has a decent algorithm for compariing floating type value as "close enough" using relative and absolute epsilons.
 
-## Section 6.8 - Logical Operators
+### Section 6.8 - Logical Operators
 * Short circuit evaluation (when only the left operand in a conditional expression is evaluated) may cause the right operand to not be evaluated.
     - Note that short circuit evaluation always occurs left to right and is an exception to the rule that operands may operate in any order.
     - Only the built-in versions of the logical operators perform short-circuit evaluation. If these operators are overloaded to work with your own type, your overloaded operator will not perform short-circuit evaluation.
@@ -650,6 +650,59 @@ std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
 * Instead of passing a long list of boolean parameters into a function, can use a single variable, where each bit is one of the boolean parameters. Can then use OR'd bitmasks to pass in only the boolean valuables we want.
 * Use `std::hex` to read in a input stream value as a hex value.
 
-### Section O.4 - Converting integers between binary and decimal representation
+## Chapter 7 - Scope, Duration, and Linkage
+### Section 7.2 - User-defined namespaces and the scope resolution operator
+* Newer and preferred naming convention for namespaces is to start with a capital letter.
+* `::` is the _scope resolution_ operator.
+* If the scope resolution operator `::` is used with nothing in front of it, the global namespace is used. This is commonly used inside a namespace to refer to the global namespace outside.
+* If an identifier (e.g. variable or function) is used without the scope resolution operator inside a namespace and no matching name is found, the compiler will search the containing (up one level) namespace. The compiler will keep going up each level until it finally searches the highest level, the global namespace.
+* Remember that function declarations and definitions for a given namespace must be declared and defined in both. For example, if the function declaration is in a header file and the function definition is in a source file, then both files need to have the namespace encapsulate the declaration. In this case, the namespace would be in both header and source files.
+    - This shows you can encapsulate variables and functions from different files in the same namespace as long as the same namespace name is used.
+* Nested namespaces
+    - Can have a namespace inside another namespace
+    ```
+    namespace Foo
+    {
+        namespace Goo // Goo is a namespace inside the Foo namespace
+        {
+            int add(int x, int y)
+            {
+                return x + y;
+            }
+        }
+    }
+    ```
+     `Foo::Bar` is then used to access the `Bar` namespace.
+    - Using C++17 and newer, nested namespaces can be declared this way:
+    ```
+    namespace Foo::Bar // Bar is a namespace inside the Foo namespace (C++17 style)
+    {
+        int add(int x, int y)
+        {
+            return x + y;
+        }
+    }
+    ```
+    This is equivalent to the example above.
+    - To add declarations only to the `Foo` namespace, use the `Foo` namespace namespace only:
+    ```
+    namespace Foo::Goo // Goo is a namespace inside the Foo namespace (C++17 style)
+    {
+        int add(int x, int y)
+        {
+            return x + y;
+        }
+    }
 
-Complete Question 6
+    namespace Foo
+    {
+        void someFcn() {} // This function is in Foo only
+    }
+    ```
+* Namespace aliases - useful for replacing a long nested namespace reference
+```
+namespace Active = Foo::Goo; // Active now refers to Foo::Goo
+```
+* Another use for namespace aliases is to change which namespace it is pointing to. For example, our namespace alias `Active` can be updated to point to `Bee::Gee` namespace. Using `Active` now refers to `Bee::Gee` instead of `Foo::Goo`.
+
+Continue with section 7.2 - How to use namespaces
