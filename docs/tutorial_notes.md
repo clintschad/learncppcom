@@ -706,3 +706,20 @@ namespace Active = Foo::Goo; // Active now refers to Foo::Goo
 * Another use for namespace aliases is to change which namespace it is pointing to. For example, our namespace alias `Active` can be updated to point to `Bee::Gee` namespace. Using `Active` now refers to `Bee::Gee` instead of `Foo::Goo`.
 
 Continue with section 7.2 - How to use namespaces
+
+* Use at least a top level namespace if distributing code.
+* Below are some examples of how to organize namespaces if working with others
+    - Project or library :: module (e.g. `Foologger::Lang`)
+    - Project or library :: module (e.g. `Foologger::Lang`)Company or org :: project or library (e.g. `Foosoft::Foologger`)
+    - Project or library :: module (e.g. `Foologger::Lang`)Company or org :: project or library :: module (e.g. `Foosoft::Foologger::Lang`)
+* Use namespaces for reusable code like math and physics equations.
+* My note: use namespaces for libraries. For example, at the top of the main code, you can use an alias (or `using namespace ___`) to select which versions of functions you want to use, and then the main code below doesn't need to change. For example, if I need to use a sensor, but the sensor option may change at runtime, I can set the namespace to the appropriate sensor, but I can keep the sensor function calls the same in the main code below.
+* Avoid deeply nested namespaces (more than 3 levels).
+
+7.3 — Local variables
+* Limit the scope of variables as much as possible. If a variable is only needed in a nested block, declare it in that block so it can't be used outside the block.
+
+NOTES TO SELF
+Complete question 1. Question 2 is complete.
+
+  
