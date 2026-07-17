@@ -704,9 +704,6 @@ std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
 namespace Active = Foo::Goo; // Active now refers to Foo::Goo
 ```
 * Another use for namespace aliases is to change which namespace it is pointing to. For example, our namespace alias `Active` can be updated to point to `Bee::Gee` namespace. Using `Active` now refers to `Bee::Gee` instead of `Foo::Goo`.
-
-Continue with section 7.2 - How to use namespaces
-
 * Use at least a top level namespace if distributing code.
 * Below are some examples of how to organize namespaces if working with others
     - Project or library :: module (e.g. `Foologger::Lang`)
@@ -716,10 +713,18 @@ Continue with section 7.2 - How to use namespaces
 * My note: use namespaces for libraries. For example, at the top of the main code, you can use an alias (or `using namespace ___`) to select which versions of functions you want to use, and then the main code below doesn't need to change. For example, if I need to use a sensor, but the sensor option may change at runtime, I can set the namespace to the appropriate sensor, but I can keep the sensor function calls the same in the main code below.
 * Avoid deeply nested namespaces (more than 3 levels).
 
-7.3 — Local variables
+### 7.3 — Local variables
 * Limit the scope of variables as much as possible. If a variable is only needed in a nested block, declare it in that block so it can't be used outside the block.
 
-NOTES TO SELF
-Complete question 1. Question 2 is complete.
+### 7.4 - Introduction to global variables
+* Variables defined outside a function are global variables.
+* Global variables have _global scope_ or _file scope_ where they can be used up until the end of the file they were declared in.
+    - My note: this is what my work would label and call a _module_ variable, i.e. its scope is the module or the file it's in.
+* It's best practice to define global variables inside a namespace (even if the namespace is global) than directly to the global namespace.
+* Variables declared in a namespace are global variables.
+* Global variables are _static_ variables.
+    - These variables have _static duration_: they're created before `main()` starts and destroyed when `main()` ends.
 
-  
+Continue with 7.4: Naming global variables
+
+
