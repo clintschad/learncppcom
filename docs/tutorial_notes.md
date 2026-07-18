@@ -724,7 +724,44 @@ namespace Active = Foo::Goo; // Active now refers to Foo::Goo
 * Variables declared in a namespace are global variables.
 * Global variables are _static_ variables.
     - These variables have _static duration_: they're created before `main()` starts and destroyed when `main()` ends.
+* Can use prefix `g` or `g_` for global variables to indicate they're global.
+    - The use of `g` to indicate scope is not the usual application of _Hungarian_ notation where the prefix is the _type_, e.g. `u16Age`. The `g` prefix indicates _scope_ instead of _type_. Thus, use of the prefix to indicate scope is permissible and preferable.
+* Variables with static duration (global and static variables) are initialized to 0 by default. As usual, these variables can be initialized to another value if desired.
 
-Continue with 7.4: Naming global variables
+### 7.5 — Variable shadowing (name hiding)
+* Variable shadowing is when a variable inside a block has the same name of a variable outside the block.
+* If the variable outside the block is global, the scope operator `::` with no prefix can be used to refer to that one, even from inside the block.
+* Avoid variable shadowing in general.
 
+### 7.6 — Internal linkage
+* _module_ is equivalent to a _translation unit_ which is a source file and all its included header files.
+* [ODR](https://en.wikipedia.org/wiki/One_Definition_Rule) - One Definition Rule
+* Linkage:
+    - No linkage: local variables
+    - Internal linkage: variables can be used within that single translation unit, but not others. At work, this would be called a "module" level variable. For example, two source files could have module variables with the same name. `static` makes global variables into module level variables.
+* Note: variables with internal linkage may not be visible to the linker at all. Alternatively, they may be visible to the linker but marked for use in a specific module only.
+* Global variables (not `const` or `constexpr`) have external linkage by default and can be seen by other modules.
+    - Using `static` makes these internal, i.e. can only be seen in that module.
+* `static` also keeps function internal and only accessible within the module.
+* `const` and `constexpr` global variables have _internal linkage_ by default and can only be seen within that module.
+    - Since these are already internal variables, `static` has no effect.
+    - Use in header files and include these in other source files so they have access.
+* Internal linkage is used to
+    - prevent a module's variable names from conflicting with other variable names in other modules.
+    - force use of an internal variable or function though it has the same name as one in another module.
+* Good habits:
+    - Use internal variables by default and only use external variables as necessary (requires more discipline but is most effective).
+    - However, if this is too strict, make the variables you don't want other files to access internal (requires less discipline but still effective).
+    - For variables you don't want accessed from other files, use an unnamed namespace to keep them internal.
+
+### 7.7 — External linkage and variable forward declarations
+* Identifiers (variables and functions) with _external linkage_ are true global variables since they can be seen and used from any file for the program.
+* Identifiers with external linkage are visible to the linker. This allows the linker to connect an identifier from one module to the appropriate definition in another module.
+* Functions have external linkage by default, which is why functions from other files are accessible by default.
+    - To use a function definition from another file, use _forward declaration_. In other words, the function can be defined and file A, and file B can use the function if it uses a function prototype/definition/forward-declaration.
+* Use `extern` to make variables external and thus useable in other modules. Non `const/constexpr` variables are external by default so it doesn't make sense to use `extern` with these. However, since `const` and `constexpr` are _internal_ by default, `extern` with these will make these constants external and accessible to other modules.
+* For `const`, `extern` needs to be used in both files, attached to the definition and declaration. For non-`const`, the declaration needs `extern` (the file you want to use the variable in) but the file with the definition doesn't need `extern`.
+    - Do not define an uninitialized non-const global variable as `extern`, else the compiler will think you're trying to make a forward declaration for the variable.
+    - `constexpr` cannot be forward declared with `extern`. See this section for more details.
+* Forward declarations for functions don't need `extern`.
 
