@@ -765,3 +765,48 @@ namespace Active = Foo::Goo; // Active now refers to Foo::Goo
     - `constexpr` cannot be forward declared with `extern`. See this section for more details.
 * Forward declarations for functions don't need `extern`.
 
+### 7.8 — Why (non-const) global variables are evil
+* Use local variables instead of global variables when possible. Global variables can be accessed from anywhere and be changed by any part of code. Although passing variables is more of a pain, you just need to search up the function calls. If a global variable is an issue, you need to search the entire program for all instances of that global.
+* Avoid initializing module variables (module global and module static variables) using other module variables, since you don't know which module's variables will be initialized first.
+* To make constants accessible to multiple files:
+    - Place constant in a namespace.
+    - In the same file, use a _getter_ function to return the `<namespace>::const`.
+    - Since functions have external linkage, any other file can use the constant by calling the getter function.
+
+### 7.9 — Inline functions and variables
+* `inline` functions are useful for small functions that are called frequently.
+* `inline` functions increase program speed (no overhead from function jumping) at the cost of making the program larger (where there was a function call is now more code).
+* The definition of an `inline` function must be in every module.
+    - This is one of the few times where a function is defined in multiple files (breaking ODR). The compiler per translation unit needs the full function defintion to expand. To use an inline function in multiple files, place the function _definition_ in a header file and include the header in any source file that needs to use the inline function.
+* _Header-only libraries_ (no .c or .cpp files) have the advantage that nothing needs to be linked.
+
+### 7.10 - Sharing global constants across multiple files (using inline variables)
+The following are pre-C++17 methods of sharing global constants, both with their advantages and disadvantages:
+* Header method (preferred): unfortunately, this creates copies of the constants in every module that includes the header, which can lead to larger programs. Also, any time the header is modified, all modules that include the header need to be recompiled.
+    1) Create a header
+    2) Define a namespace
+    3) Add constants to namespace
+    4) Include header to any source file using these constants
+    5) Source file access desired constant by using namespace name, `::`, and constant variable name.
+* Extern/source method: this creates only one version of the constants throughout the program. However, modules that use these externed variables can't use them in a constexpr. constexpr needs the full definition when the module is being compiled, but it only has the forward declartion of the extern variable at compile time.
+    1) Source file (.cpp) with namespace with extern constants and definitions inside.
+    2) Header file with same namespace with extern constants and forward declarations inside.
+    3) Source files using these constants include the header file and can now use them.
+C++17 and later
+    - Same as the header method above but `inline` is used for the const variables. This removes the duplicates so there is only one copy of the variable throughout the program.
+    - There is still the downside that changing the header file at all means all files including the header need to be recompiled.
+* constexpr functions are implictily inline, but constexpr variables are not. Thus, `inline` must be used with constexpr variables to make them inline.
+* `inline` variables have external linkage by default.
+
+### 7.11 — Static local variables
+* Initialize `static` local variables.
+* `s_` can be used as a variable prefix to denote it's `static`, similar to how `g_` denotes a variable is global.
+* A benefit that a `static` local variable has over a global variable is its scope. While a global variable can be accessed from anywhere, the `static` variable can only be accessed within its local scope. It lives as long as a global variable, but its scope is smaller and thus more protected.
+* Use static local variables when initializing the object every time the function is called is expensive (e.g. reading from database).
+* const static local variables are generally okay to use.
+* Non-const static local variables should generally be avoided. If used, ensure it never needs to be reset and doesn't alter program flow.
+* Applying `static` to a global variable forces that variable to have internal linkage and therefore cannot be exported to other files.
+* Applying `static` to a function forces it to have internal linkage (blocks access from other files) since functions have external linkage by default.
+
+### 7.12 — Scope, duration, and linkage summary
+* Contains overall good summary of scope, duration, and linkage (internal vs external).
