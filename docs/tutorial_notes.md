@@ -810,3 +810,8 @@ C++17 and later
 
 ### 7.12 — Scope, duration, and linkage summary
 * Contains overall good summary of scope, duration, and linkage (internal vs external).
+
+### 7.13 — Using declarations and using directives
+* Qualified scope names are names with namespace and scope resolution operator, e.g. `std::cout` and `::pi`. `cout` is qualified by `std` and `::pi` is qualified by the global namespace.
+* Unqualified scope names are without namespace and scope resolution operator, e.g. `cout` and `pi,` and require a _using declaration_ or a _using directive_.
+* A _using declaration_ allows use of a namespace name without the namespace and scope resolution operator. This is active from where the _using declaration_ starts to the end of the its scope. For example, if the _using declaration_ was used in a function, it would only be active in that function.
