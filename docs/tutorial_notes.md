@@ -792,6 +792,7 @@ The following are pre-C++17 methods of sharing global constants, both with their
     1) Source file (.cpp) with namespace with extern constants and definitions inside.
     2) Header file with same namespace with extern constants and forward declarations inside.
     3) Source files using these constants include the header file and can now use them.
+    
 C++17 and later
     - Same as the header method above but `inline` is used for the const variables. This removes the duplicates so there is only one copy of the variable throughout the program.
     - There is still the downside that changing the header file at all means all files including the header need to be recompiled.
@@ -814,4 +815,22 @@ C++17 and later
 ### 7.13 — Using declarations and using directives
 * Qualified scope names are names with namespace and scope resolution operator, e.g. `std::cout` and `::pi`. `cout` is qualified by `std` and `::pi` is qualified by the global namespace.
 * Unqualified scope names are without namespace and scope resolution operator, e.g. `cout` and `pi,` and require a _using declaration_ or a _using directive_.
-* A _using declaration_ allows use of a namespace name without the namespace and scope resolution operator. This is active from where the _using declaration_ starts to the end of the its scope. For example, if the _using declaration_ was used in a function, it would only be active in that function.
+* A _using declaration_ allows use of a namespace name without the namespace and scope resolution operator.
+```
+    using std::cout; 
+    cout << "Hello world!\n";
+```
+* A _using directive_ allows __all__ identifiers in a namespace to be used without namespace and scope resolution operator:
+```
+    using namespace std; 
+    cout << "Hello world!\n";
+```
+* Both _using declaration_ and _using directive_ are limited to the scope it is used in. For example, if a _using declaration_ or _using directive_ is used in a function, it is only be active in that function.
+* Prefer _using declarations_. Avoid _using directives_ since it gives access to all identifiers in the namespace and greatly increases risk of naming conflicts.
+* Do not use _using_ statements in header files or before an `#include` directive.
+* Once a _using_ statement is issued within a scope, it cannot be cancelled or undone within that scope.
+
+### 7.14 — Unnamed and inline namespaces
+* An unnamed namespace is accessible from the parent namespace, typically the global namespace of a file. This makes its objects inside accessible __and only accessible__ from within the file. This is equivalent to using `static` before a variable or function.
+* Do not use unnamed namespaces in header files.
+* Inline namespace - use an inline namespace so it is the default namespace used when a function or variable is used without the scope resolution operator. For example, there can be two namespaces with the same function name inside but one namespace has the `inline` identifier. When the function name is called in the code, if it's called without the scope resolution operator, the function from the `inline` namespace will be used. This is handy if a function is updated and you want that to be the default, but you still might want the old definition around, but only accessible by purposefully using the scope operator.
