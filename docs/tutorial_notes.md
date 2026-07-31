@@ -834,3 +834,74 @@ C++17 and later
 * An unnamed namespace is accessible from the parent namespace, typically the global namespace of a file. This makes its objects inside accessible __and only accessible__ from within the file. This is equivalent to using `static` before a variable or function.
 * Do not use unnamed namespaces in header files.
 * Inline namespace - use an inline namespace so it is the default namespace used when a function or variable is used without the scope resolution operator. For example, there can be two namespaces with the same function name inside but one namespace has the `inline` identifier. When the function name is called in the code, if it's called without the scope resolution operator, the function from the `inline` namespace will be used. This is handy if a function is updated and you want that to be the default, but you still might want the old definition around, but only accessible by purposefully using the scope operator.
+
+## Chapter 8 - Control Flow
+### 8.2 — If statements and blocks
+* Don't use `if-else` statements to determine the return value for a function. Instead, just use `if` for every return value condition. If the `if` condition is true, the function will return there and the rest of the `if` statements won't execute, as if they were `else if` statements.
+
+### 8.3 — Common if statement problems
+* Flatten nested if statements when possible, e.g. instead of
+```
+if(x)
+{
+    if(y)
+}
+```
+do
+```
+if(x && y)
+{
+
+}
+```
+* A _null_ statement is a statement comprised of just `;` and does nothing. Perhaps it is useful for timing purposes, e.g. just to burn specified number of clock cycles for a certain length of time delay?
+    - Python uses the `pass` keyword. For C++, a `PASS` preprocessor directive can be defined and used instead. The preprocessor directive here is `#define PASS`. Thus, when `PASS;` is used, `PASS` is stripped out, and only `;` is left, making this a null statement, behaving similarly to the Python `pass` keyword as described before.
+* Be careful to use conditional `==` in `if` statements and not the assignment operator `=`.
+
+### 8.4 — Constexpr if statements
+* `if constexpr` is for C++17 and newer.
+* The `if constexpr` is  a more efficient `if-else` method when `constexpr` is in a conditional. Since the constexpr is known at compile time and thus the branch is already predetermined, `if constexpr` will only keep and compile what makes sense to keep and remove the rest since it's not necessary.
+```
+constexpr double gravity{ 9.8 };
+
+if constexpr (gravity == 9.8) // now using constexpr if
+	std::cout << "Gravity is normal.\n";
+else
+	std::cout << "We are not on Earth.\n";
+```
+* Prefer using `if constexpr` when the conditional is a const expression.
+* Compilers will often treat conditionals using `constexpr` as `if constexpr`, but compilers are not forced to do so.
+
+### 8.5 — Switch statement basics
+* Switch labels are not conventionally indented.
+
+### 8.6 — Switch fallthrough and scoping
+* _fallthrough_ - when execution from one case goes continues into another case, i.e. there is no `break` or `return` at the end of the case.
+* Sometimes a fallthrough will trigger a warning from the compiler. The `[[fallthrough]]` attribute can be used to inform the compiler that this is intentional and not to throw a warning.
+* A `switch` statement can be used to replace a sequence of OR conditions by using all these conditions in a `switch` statement.
+```
+return (c=='a' || c=='e' || c=='i' || c=='o' || c=='u' ||
+        c=='A' || c=='E' || c=='I' || c=='O' || c=='U');
+```
+versus
+```
+switch (c)
+{
+case 'a': // if c is 'a'
+case 'e': // or if c is 'e'
+case 'i': // or if c is 'i'
+case 'o': // or if c is 'o'
+case 'u': // or if c is 'u'
+case 'A': // or if c is 'A'
+case 'E': // or if c is 'E'
+case 'I': // or if c is 'I'
+case 'O': // or if c is 'O'
+case 'U': // or if c is 'U'
+    return true;
+default:
+    return false;
+}
+```
+* All statements, regardless of case, are in the same scope as the overall switch block, e.g. a variable defined in one case can be used in another.
+
+Complete question 1.
