@@ -904,4 +904,36 @@ default:
 ```
 * All statements, regardless of case, are in the same scope as the overall switch block, e.g. a variable defined in one case can be used in another.
 
-Complete question 1.
+### 8.7 — Goto statements
+* Only use `goto` when using other conditional methods would create less readable code.
+* Use `goto` to exit a nested loop but not the function. `break` only exits the inner loop but leaves you in the outer loop.
+
+### 8.8 — Introduction to loops and while statements
+* Use `while(true)` for intentional infinite loops.
+* Use `iii`, `jjj`, or `kkk` for loop variables to make it easier to search for them, as just searching for `i` will catch all words containing `i`.
+
+### 8.9 — Do while statements
+* Prefer `while` loops over `do-while` loops.
+
+### 8.10 — For statements
+* Can put multiple counters in a `for` loop. Example:
+```
+for (int x{ 0 }, y{ 9 }; x < 10; ++x, --y)
+    std::cout << x << ' ' << y << '\n';
+```
+* Note that this is one of the few places where multiple variables can be defined in a single statement. Using the comma `,` operator here is okay.
+* `for` loops can loop over characters:
+```
+for (char c{ 'a' }; c <= 'e'; ++c)
+{
+    std::cout << c;
+}
+```
+* For loop variables only used inside the loop, define them inside the loop. This includes the `for` loop counter variables. For example, for the loop counter, use `for(int i{0}...)` instead of
+```
+int i{};
+for(i = 0...)
+```
+This keeps the scope of `i` inside the loop and not larger than necessary.
+
+Continue with question 1.
