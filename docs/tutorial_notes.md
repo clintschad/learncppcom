@@ -936,4 +936,4 @@ for(i = 0...)
 ```
 This keeps the scope of `i` inside the loop and not larger than necessary.
 
-Continue with question 1.
+Continue with section 8.11.
