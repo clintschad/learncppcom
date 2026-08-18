@@ -936,4 +936,15 @@ for(i = 0...)
 ```
 This keeps the scope of `i` inside the loop and not larger than necessary.
 
-Continue with section 8.11.
+### 8.11 — Break and continue 
+* `continue` is a control statement like `break` except it skips to the bottom of the loop and the loop continues.
+
+### 8.12 — Halts (exiting your program early) 
+* `std::exit` terminates the program immediately and hands control over back to the OS that called it. However, it does not clean up local variables in the current function or in the call stack. It does no "cleanup."
+* `std::atexit` can be used to register a function that will be called once `std::exit` is called. For example, a "cleanup" function (clean up variables, shut off connections, save files and databases, etc) can be called after `std::exit` is called but before the program terminates and hands control to the OS.
+* Multiple functions can be registered with `std::atexit`. They will be called in reverse order, with the last registered function being called first.
+* `std::exit` can cause multi-threaded programs to crash. Look into using `std::quick_exit` and `std::at_quick_exit` instead.
+* `std::abort` causes program to terminate abnormally. It does not do any cleanup. `std::terminate()` calls `std::abort()` by default.
+* Almost never use halts, as listed above. Use exceptions instead.
+
+Continue with 8.x question 3
