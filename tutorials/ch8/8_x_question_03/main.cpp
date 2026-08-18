@@ -35,11 +35,10 @@ int main()
     }
 
     std::cout << "Thank you for playing.\n";
-    
+
     return 0;
 }
 
-// Return true if win, false if loss
 void hiLo(int hi, int lo, int numGuesses)
 {
     int userNum{0};
