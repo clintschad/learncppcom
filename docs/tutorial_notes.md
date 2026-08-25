@@ -986,3 +986,15 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Prefer `static_assert` over `assert`.
 * Asserts should only be in debug builds, not production builds.
     - The `NDEBUG` preprocessor directive typically disables asserts when defined. This will typically be defined for production builds.
+
+## Chapter 14 — Introduction to Classes
+### 14.1 — Introduction to object-oriented programming
+* Procedural programming has properties (data) and behaviors (functions) separated.
+* Object-oriented programming has properties and behaviors combined.
+* Important OOP concepts:
+    - Inheritance
+    - Encapsulation
+    - Abstraction
+    - Polymorphism
+
+### 14.2 — Introduction to classes
