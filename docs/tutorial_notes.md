@@ -987,6 +987,43 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Asserts should only be in debug builds, not production builds.
     - The `NDEBUG` preprocessor directive typically disables asserts when defined. This will typically be defined for production builds.
 
+## Chapter 10 - Type Conversion, Type Aliases, and Type Deduction
+### 10.1 — Implicit type conversion
+
+
+## Chapter 12 - Compound Types: References and Pointers
+### 12.2 - Value categories (lvalues and rvalues)
+* An _lvalue_ (_left_ or _locator_ value) evaluates to an object with an identifier.
+* An _rvalue_ (_right_ value) evaluates to a value (usually a literal, e.g. `5` or `3.8`).
+### 12.3 - Lvalue references
+* lvalue reference variable - reference variable to an lvalue (usually another variable). So a variable that's a reference to another variable.
+* The variable's value can be changed by either the reference or the actual variable.
+* References must be initialized (unlike pointers).
+* When a reference is initialized, it is _bound_ to the referenced variable or function (called the _referent_). This process is also called _reference binding_.
+* Non-const references can only be bound to modifiable variables (non-const). They cannot be bound to `const` type variables or rvalues (e.g. literals).
+* Usually, the reference type (e.g. `int&`, `float&`) must match the variable type (e.g. `int x`, `float f`).
+* A reference cannot be reassigned to another variable (unlike pointers).
+* A _dangling reference_ is when the _referent_ has been destroyed but the _reference_ is still alive.
+* References are _not_ objects: 
+    - Depending on the code and the compiler, a reference "variable" may not use any space if the compiler simply replaces instances of the reference with the referent (unlike pointer).
+    - Reference to another reference is not possible (unlike pointer).
+    - `std::reference_wrapper` may be used for an "object-like" reference.
+
+### 12.4 — Lvalue references to const
+* Must use `const` references to refer to `const` values, e.g.
+```
+const int x { 5 };      // x is a non-modifiable (const) lvalue
+
+int& ref { x };         // error: ref can not bind to non-modifiable lvalue
+const int& ref { x };   // okay: ref is a an lvalue reference to a const value
+```
+* `const` reference can only read and not change the referent value.
+* `const` reference can also be used for variables. However, the reference can only read the referenced variable. The reference cannot be used to change the referenced variable's value.
+* Prefer using `const` references over non-const references, unless the referent needs to be modified.
+* `const` references can be initialized to rvalues, e.g. literals. For example `const int& myRef{5};`
+* A reference can be bound to a different type, e.g. `const int& intRef {'a'}`.
+    - HOWEVER, when this is done, a temporary copy of the referent is made and is what the reference is attached to. So if the **original** object is modified, the reference won't reflect this since it's attached to the **copy** and not the original.
+
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
 * Procedural programming has properties (data) and behaviors (functions) separated.
@@ -998,3 +1035,4 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
     - Polymorphism
 
 ### 14.2 — Introduction to classes
+
