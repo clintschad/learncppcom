@@ -989,6 +989,29 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 
 ## Chapter 10 - Type Conversion, Type Aliases, and Type Deduction
 ### 10.1 — Implicit type conversion
+* Narrowing conversion - data type conversion resulting in loss of information, e.g. `int myNum{3.2}`.
+* Narrowing conversions are not allowed with brace initializations.
+
+### 10.2 — Floating-point and integral promotion
+* Numeric promotion: "widening" of the type, e.g.
+    - integer promotion, e.g. `uint8` to `int`
+    - floating point promotion, e.g. `float` to `double`
+* For integer promotion, the value is guaranteed to be the same, but the sign may not be.
+
+### 10.3 — Numeric conversions
+* `double` supports 9 significant figures while `float` supports about 7.
+
+### 10.4 — Narrowing conversions, list initialization, and constexpr initializers
+* Narrowing conversion is going from a larger to smaller data type, e.g. `int` to `short` or `double` to `float`.
+* Avoid narrowing conversions whenever possible.
+* If necessary (e.g. using smaller data type for a function call of larger type) use a `static_cast`. This will document that the narrowing conversion is intentional and prevent compiler warnings.
+* Brace initialization does not allow narrowing conversion. If this is needed, `static_cast` can be used inside the brace.
+* Narrowing conversions are allowed **for integer types** if
+    * value being converted is also `constexpr`
+    * value can be converted without changing original value 
+* Narrowing conversions for floating types (e.g. `float`, `double`, `long double`) are allowed if value is in the range of the destination type, even if precision is lost. Compiler may still warn if `-Wconversion` is used.
+
+### 10.5 — Arithmetic conversions
 
 
 ## Chapter 12 - Compound Types: References and Pointers
