@@ -989,6 +989,45 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 
 ## Chapter 10 - Type Conversion, Type Aliases, and Type Deduction
 ### 10.1 — Implicit type conversion
+* Narrowing conversion - data type conversion resulting in loss of information, e.g. `int myNum{3.2}`.
+* Narrowing conversions are not allowed with brace initializations.
+
+### 10.2 — Floating-point and integral promotion
+* Numeric promotion: "widening" of the type, e.g.
+    - integer promotion, e.g. `uint8` to `int`
+    - floating point promotion, e.g. `float` to `double`
+* For integer promotion, the value is guaranteed to be the same, but the sign may not be.
+
+### 10.3 — Numeric conversions
+* `double` supports 9 significant figures while `float` supports about 7.
+
+### 10.4 — Narrowing conversions, list initialization, and constexpr initializers
+* Narrowing conversion is going from a larger to smaller data type, e.g. `int` to `short` or `double` to `float`.
+* Avoid narrowing conversions whenever possible.
+* If necessary (e.g. using smaller data type for a function call of larger type) use a `static_cast`. This will document that the narrowing conversion is intentional and prevent compiler warnings.
+* Brace initialization does not allow narrowing conversion. If this is needed, `static_cast` can be used inside the brace.
+* Narrowing conversions are allowed **for integer types** if
+    * value being converted is also `constexpr`
+    * value can be converted without changing original value 
+* Narrowing conversions for floating types (e.g. `float`, `double`, `long double`) are allowed if value is in the range of the destination type, even if precision is lost. Compiler may still warn if `-Wconversion` is used.
+
+### 10.5 — Arithmetic conversions
+* There is an arithmetic rank list (from `int` to `long double`) that if two operands are of different types in an operation like addition, the operand of lower rank (e.g `int`) is promoted to the rank of the other operand with higher rank, (e.g. `float`).
+* Using two operands of type `short` results in an `int`, since `short` is not on the rank list (see this section for the rank list).
+* Using signed and unsigned integers in an operation follows different rules. See this section for those rules.
+
+### 10.6 — Explicit type conversion (casting) and static_cast
+* _Type casting_ is also called _explicit type conversion_ to distinguish it from _implicit type conversion_.
+* There are five types of casts in C++: `static_cast`, `dynamic_cast`, `const_cast`, and `reinterpret_cast`.
+    - Avoid `const_cast` and `reinterpret_cast` unless for a very good and specific reason since they can be harmful if used incorrectly.
+* C-style cast can be done like in C, e.g. `(double)x`. It can also be done in another form called _**function-style cast**_ e.g. `double(x)`.* With a few exceptions, C-style casts should be avoided due to the following:
+    - may perform `const_cast`, `static_cast`, and `reinterpret_cast` and it may not be clear which is being performed.
+    - may perform more than one cast.
+    - is more difficult to search for and see in code.
+* Prefer to use `static_cast`.
+* Prefer `static_cast` over direct-list initialization of a temporary, e.g. `int x{10}; double{x};`.
+
+### 10.7 — Typedefs and type aliases
 
 
 ## Chapter 12 - Compound Types: References and Pointers
