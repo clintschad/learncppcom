@@ -1012,6 +1012,25 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Narrowing conversions for floating types (e.g. `float`, `double`, `long double`) are allowed if value is in the range of the destination type, even if precision is lost. Compiler may still warn if `-Wconversion` is used.
 
 ### 10.5 — Arithmetic conversions
+<<<<<<< HEAD
+=======
+* There is an arithmetic rank list (from `int` to `long double`) that if two operands are of different types in an operation like addition, the operand of lower rank (e.g `int`) is promoted to the rank of the other operand with higher rank, (e.g. `float`).
+* Using two operands of type `short` results in an `int`, since `short` is not on the rank list (see this section for the rank list).
+* Using signed and unsigned integers in an operation follows different rules. See this section for those rules.
+
+### 10.6 — Explicit type conversion (casting) and static_cast
+* _Type casting_ is also called _explicit type conversion_ to distinguish it from _implicit type conversion_.
+* There are five types of casts in C++: `static_cast`, `dynamic_cast`, `const_cast`, and `reinterpret_cast`.
+    - Avoid `const_cast` and `reinterpret_cast` unless for a very good and specific reason since they can be harmful if used incorrectly.
+* C-style cast can be done like in C, e.g. `(double)x`. It can also be done in another form called _**function-style cast**_ e.g. `double(x)`.* With a few exceptions, C-style casts should be avoided due to the following:
+    - may perform `const_cast`, `static_cast`, and `reinterpret_cast` and it may not be clear which is being performed.
+    - may perform more than one cast.
+    - is more difficult to search for and see in code.
+* Prefer to use `static_cast`.
+* Prefer `static_cast` over direct-list initialization of a temporary, e.g. `int x{10}; double{x};`.
+
+### 10.7 — Typedefs and type aliases
+>>>>>>> daefdd325d8e432ee24e7982fcb12f6c1f7c7281
 
 
 ## Chapter 12 - Compound Types: References and Pointers
