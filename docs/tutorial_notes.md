@@ -1012,8 +1012,6 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Narrowing conversions for floating types (e.g. `float`, `double`, `long double`) are allowed if value is in the range of the destination type, even if precision is lost. Compiler may still warn if `-Wconversion` is used.
 
 ### 10.5 — Arithmetic conversions
-<<<<<<< HEAD
-=======
 * There is an arithmetic rank list (from `int` to `long double`) that if two operands are of different types in an operation like addition, the operand of lower rank (e.g `int`) is promoted to the rank of the other operand with higher rank, (e.g. `float`).
 * Using two operands of type `short` results in an `int`, since `short` is not on the rank list (see this section for the rank list).
 * Using signed and unsigned integers in an operation follows different rules. See this section for those rules.
@@ -1030,7 +1028,6 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Prefer `static_cast` over direct-list initialization of a temporary, e.g. `int x{10}; double{x};`.
 
 ### 10.7 — Typedefs and type aliases
->>>>>>> daefdd325d8e432ee24e7982fcb12f6c1f7c7281
 
 
 ## Chapter 12 - Compound Types: References and Pointers
