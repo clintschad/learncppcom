@@ -1028,7 +1028,56 @@ This keeps the scope of `i` inside the loop and not larger than necessary.
 * Prefer `static_cast` over direct-list initialization of a temporary, e.g. `int x{10}; double{x};`.
 
 ### 10.7 — Typedefs and type aliases
+* The keyword `using` can be used to create alias types, e.g.
+```
+using Distance = double;
+Distance milesToDestination{38.3};
+```
+* Type aliases sometimes use the `_t` suffix, as in `size_t` or `nullptr_t`. This is common in C, C++ standard library, and POSIX.
+* However, just using a capital first letter for the type alias is enough and preferred in modern C++, as in the `Distance` example above.
+* Type aliases are not safe. For example,
+```
+using Miles = long;
+using Speed = long;
+Miles distance{5};
+Speed mhz{3200};
+distance = mhz; // No type warning since they're both technically the same long type.
+```
+* `using` has scope like any variable. Place in a header file and include as necessary if needed in more than one source file.
+* `typedef` is an older way of creating an alias for a type. Prefer to use type aliase over `typedef`.
+* A type alias may be useful to make more obvious what a return type is. For example,
+```
+int gradeTest();
+```
+versus
+```
+using TestScore = int;
+TestScore gradeTest();
+```
+* Type aliases means another developer needs to look up what the alias is. This is the cost of using the alias. Therefore, only use aliases when advantageous and its beneficial, even with the cost. For example, it might be worth using an alias for a function or data type used a lot throughout the code that is much shorter than original type.
 
+### 10.8 — Type deduction for objects using the auto keyword
+* The `auto` keyword can be used to _deduce_ or _infer_ the variable's type based on the data type of the literal or variable that is initializing it, e.g. `auto d{5.0}` will make `d` a `double` since `5.0` is a `double` literal. Also, if `auto x {d}` were to occur later, this will make `x` type `double` since `d` is `double`.
+* `auto` can also be used to set the type of a variable that is returned from a function since the function's return type is known.
+* `const` is not carried over when `auto` gets the type from a `const` variable. `const` must be applied to the new `auto` variable, e.g. `const auto myvar {othervar};`. This also applies to `constexpr`.
+* `auto` for `string` literals makes the type of `char*` instead of `std::string`. If using a `string` literal and want `auto` to deduce `string`, use `<string_view>` header, `std::literals` namespace, and `-s` and `-sv` suffixes in the `string` literals, e.g. `auto mystr{"hola"s};` or `auto mystr2{"amigo"sv};`.
+* Use `auto` for variables when type doesn't matter.
+* Use explicit type when variable type needs to be different from initializer type or in the context where explicit is more obvious and useful.
+
+### 10.9 — Type deduction for functions
+* `auto` can replace the return type of a function. It will infer what the return type is based on the type of the value being returned. However, it is not possible to use conditional logic to choose between different return types in run time; all return values and variables must be of the same type.
+* For functions with the `auto` return type, the full definition must occur before calling it; using only a function prototype before the call is not sufficient.
+* Because it's not as obvious what the return type for a function is when using auto (would have to inspect the actual function definition if IDE doesn't show), it is recommended to prefer explicit function return type over auto return type. For variables with type `auto`, it is obvious what the type of the variable is given the initializer's type is usually (implicitly) in the same statement.
+* `auto` is used when a _trailing return type_ is used, e.g.
+```
+auto add(int x, int y) -> int;
+auto divide(double x, double y) -> double;
+auto printSomething() -> void;
+auto generateSubstring(const std::string &s, int start, int len) -> std::string;
+```
+* _trailing return types_ are beneficial when the return type is long and complex. Placing the return type at the end of the line cleans up the code a bit, is easier to find the function name and parameters, and we can skip reading the return type if we don't need to.
+* However, it is preferred to use the standard return type unless one is required.
+* Function parameters cannot be of type `auto` prior to C++20. Newer versions allow this, but they are used in _function templates_ which are covered in sections 11.6 and 11.8.
 
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
