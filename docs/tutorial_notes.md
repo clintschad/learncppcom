@@ -1079,6 +1079,16 @@ auto generateSubstring(const std::string &s, int start, int len) -> std::string;
 * However, it is preferred to use the standard return type unless one is required.
 * Function parameters cannot be of type `auto` prior to C++20. Newer versions allow this, but they are used in _function templates_ which are covered in sections 11.6 and 11.8.
 
+## Chapter —  Function Overloading and Function Templates
+### 11.1 — Introduction to function overloading
+* Function overloading - when two functions (in the same scope) have the same name but different parameter (signature).
+
+### 11.2 — Function overload differentiation
+* A function's type signature does not include return type. Also, for a function to have a different type signature, typedefs, type aliases, and const qualifiers don't count. This does not apply to member functions.
+* _name mangling_ is when the compiler assigns unique names to functions, especially for differentiating between overloaded functions of the same name in source code.
+
+### 11.3 — Function overload resolution and ambiguous matches
+
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
 * An _lvalue_ (_left_ or _locator_ value) evaluates to an object with an identifier.
