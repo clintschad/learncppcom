@@ -1079,7 +1079,7 @@ auto generateSubstring(const std::string &s, int start, int len) -> std::string;
 * However, it is preferred to use the standard return type unless one is required.
 * Function parameters cannot be of type `auto` prior to C++20. Newer versions allow this, but they are used in _function templates_ which are covered in sections 11.6 and 11.8.
 
-## Chapter —  Function Overloading and Function Templates
+## Chapter 11 —  Function Overloading and Function Templates
 ### 11.1 — Introduction to function overloading
 * Function overloading - when two functions (in the same scope) have the same name but different parameter (signature).
 
