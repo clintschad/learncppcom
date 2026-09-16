@@ -1088,6 +1088,108 @@ auto generateSubstring(const std::string &s, int start, int len) -> std::string;
 * _name mangling_ is when the compiler assigns unique names to functions, especially for differentiating between overloaded functions of the same name in source code.
 
 ### 11.3 — Function overload resolution and ambiguous matches
+* Overload resolution - when a function call's types don't exactly match any of the overloaded functions, it will attempt conversions that don't change the value. The compiler tries promotion (e.g. from `short` to `int`) and if that doesn't work, it tries conversion (e.g. from `short` to `double`). If neither of these works, the compiler will issue an error about not finding a matching function.
+* Another compiler error is _ambiguous match_ where the function could match multiple function signatures depending on the type conversion.
+* For functions with multiple parameters, the conversion rules are applied one argument at a time. Going through the conversion process, the function with the closest signature is chosen first. If this isn't reached, the compiler issues an error.
+
+### 11.4 — Deleting functions
+* Function calls with certain types can be _deleted_ so when this occurs, a compile error occurs. Below, function calls to `printInt` when the parameter type is `char` or `bool` will result in a compilation error.
+```
+void printInt(char) = delete; // calls to this function will halt compilation
+void printInt(bool) = delete; // calls to this function will halt compilation
+```
+* Rather than explicilty listing all the function calls that are invalid, you can do the opposite and only allow certain function calls with the a certain type using _function templates_.
+```
+// This function takes precedence for arguments of type int
+void printInt(int x)
+{
+    std::cout << x << '\n';
+}
+
+// This function template takes precedence for arguments of other types
+// Since this function template is deleted, calls to it will halt compilation
+template <typename T>
+void printInt(T x) = delete;
+```
+
+### 11.5 — Default arguments
+* Default argument - sometimes called _optional parameter_ is an optional function parameter assigned with a default value. If a function call does not specify this parameter, its default value is used. For example,
+```
+void print(int x, int y=10) // 10 is the default argument
+{
+    std::cout << "x: " << x << '\n';
+    std::cout << "y: " << y << '\n';
+}
+
+print(1, 2); // y will use user-supplied argument 2
+print(3); // y will use default argument 4, as if we had called print(3, 4)
+```
+The program prints out
+```
+x: 1
+y: 2
+x: 3
+y: 4
+```
+* Good for function calls where the user doesn't need to specify a value but can override if they want. For example,
+```
+int rollDie(int sides=6);
+void openLogFile(std::string filename="default.log");
+```
+* Default arguments are useful for adding a parameter to an existing function. Old function calls without the new parameter will automatically use the default value, while new function calls can specify the new parameter is desired.
+* Multiple default arguments can be used. However, optional arguments must be dropped from right to left, e.g.
+```
+void print(std::string_view sv="Hello", double d=10.0);
+
+int main()
+{
+    print();           // okay: both arguments defaulted
+    print("Macaroni"); // okay: d defaults to 10.0
+    print(20.0);       // error: does not match above function (cannot skip argument for sv)
+
+    return 0;
+}
+```
+* Default arguments in the function definition/declaration must be most-right: a default argument cannot be to the left of a regular required argument. See the incorrect example below.
+```
+void print(int x=10, int y); // not allowed
+```
+* Default argument must be in forward declaration or definition, but not both. 
+```
+void print(int x, int y=4);  // forward declaration
+
+void print(int x, int y=4) // compile error: redefinition of default argument
+{
+    std::cout << "x: " << x << '\n';
+    std::cout << "y: " << y << '\n';
+}
+```
+* Place default argument in forward declaration if header file is used; otherwise place in function definition.
+* Default arguments work with function overloading, though this can lead to ambiguity problems if care is not taken.
+
+### 11.6 — Function templates 
+* A _function template_ is the template for a function where placeholder types are used. The compiler will then generate all the necessary overloaded functions of the necessary types. 
+
+    * Normal function with explicit types:
+    ```
+    int max(int x, int y)
+    {
+        return (x < y) ? y : x;
+    }
+    ```
+    * Function template version:
+    ```
+    template <typename T> // this is the template parameter declaration defining T as a type template parameter
+    T max(T x, T y) // this is the function template definition for max<T>
+    {
+        return (x < y) ? y : x;
+    }
+    ```
+* Functions generated from a function template are _instantiated functions_.
+* Use capital single letters like `T`, `U`, `V`, etc. for trivial obvious template parameters. Use names starting with a capital letter (e.g. `Allocator` or `TAllocator`) when a more descriptive name is necessary.
+
+### 11.7 — Function template instantiation
+* 
 
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
