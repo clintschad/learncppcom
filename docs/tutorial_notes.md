@@ -1189,7 +1189,47 @@ void print(int x, int y=4) // compile error: redefinition of default argument
 * Use capital single letters like `T`, `U`, `V`, etc. for trivial obvious template parameters. Use names starting with a capital letter (e.g. `Allocator` or `TAllocator`) when a more descriptive name is necessary.
 
 ### 11.7 — Function template instantiation
-* 
+* A function call can be explicitly instantiated from a template using angle brackets and the actual desired type:
+```
+template <typename T>
+T max(T x, T y)
+{
+    return (x < y) ? y : x;
+}
+
+max<int>(1, 2); // instantiates and calls function max<int>(int, int)
+```
+* A function can also be implicitly instantiated via _template argument deduction_ by leaving out the angle brackets and type and having the compiler infer the type from the function argument type:
+```
+template <typename T>
+T max(T x, T y)
+{
+    return (x < y) ? y : x;
+}
+
+max(1, 2); // infers max<int>(int, int), instatiates, and calls
+```
+* Favor implicit function instantiation (looks like normal function call) over explicit, unless the template version is needed over a equivalent non-template version.
+* Function templates can have a mix of template parameters and actual types, e.g.
+```
+template <typename T>
+int someFcn(T, double)
+{
+    return 5;
+}
+```
+* Sometimes a function template, e.g. a math function template, should not use certain types at all, such as as `string`. Use _function template specialization_ with ` = delete` to throw an error when the template attempts to use the wrong type.
+* Function templates can have default arguments for actual type arguments, e.g. `void print(T val, int times=1)`
+* Beware of function templates with modifiable static local variables. The different instantiated functions with different types will each have their own static function, e.g. the `int` function instance will have its own static variable, and the `double` function instance will have its own static variable. This can cause issues if the caller inadvertently calls the "wrong" function by using the wrong parameter type, expecting the other static variable.
+* The argument _types_ in a function template are called _template types_ as well as _generic types_.
+
+### 11.8 — Function templates with multiple template types
+* A function template with multiple argument types may need either `auto` and/or `std::common_type_t` to determine the return type.
+* C++20 introduced _abbreviated function templates_ where `auto` can be used instead of the usual `template` declaration (see this section for more detail). This code looks much cleaner. This works well when the function only has one parameter or multiple parameters that are all different types. However, it will not work if multiple parameters are of the same type.
+* Function templates can also use _overloading_.
+
+### 11.9 — Non-type template parameters
+
 
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
