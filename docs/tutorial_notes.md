@@ -1229,7 +1229,67 @@ int someFcn(T, double)
 * Function templates can also use _overloading_.
 
 ### 11.9 — Non-type template parameters
+* A _non-type template parameter_ is a template parameter of a certain constexpr type that's "passed" into a function. For example:
+```
+#include <iostream>
 
+template <int N> // declare a non-type template parameter of type int named N
+void print()
+{
+    std::cout << N << '\n'; // use value of N here
+}
+
+int main()
+{
+    print<5>(); // 5 is our non-type template argument
+
+    return 0;
+}
+```
+* This is commonly used for passing `constexpr` values to functions to be used in contexts requiring a constant expression, such as `static_assert`.
+* Certain non-type template parameters can be implicitly converted (type casted). For example:
+```
+#include <iostream>
+
+template <int N> // int non-type template parameter
+void print()
+{
+    std::cout << N << '\n';
+}
+
+int main()
+{
+    print<5>();   // no conversion necessary
+    print<'c'>(); // 'c' converted to type int, prints 99
+
+    return 0;
+}
+```
+* As of C++17, `auto` can be used for non-type template parameters for the compiler to deduce the type:
+```
+#include <iostream>
+
+template <auto N> // deduce non-type template parameter from template argument
+void print()
+{
+    std::cout << N << '\n';
+}
+
+int main()
+{
+    print<5>();   // N deduced as int `5`
+    print<'c'>(); // N deduced as char `c`
+
+    return 0;
+}
+```
+* Quiz question 1 - I wrote my own factorial loop, but the author's is better.
+
+### 11.x — Chapter 11 summary and quiz
+* Start with question 3.
+
+### 11.10 — Using function templates in multiple files
+* Templates are similar to inline functions where the compiler needs to see the full definition before it can be "called." Place template definition in header file and include in source files that call the template.
 
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
