@@ -449,7 +449,7 @@ double e { 0.0 }; // 0.0 is a double
 * Using `cin` for these types can also be problem. For example, if the input buffer is `35` and `cin` is used to assign value to an `int8_t` or `uint8_t` variable, it will only extract the `3` and assign this to the variable. `3` in ASCII is numerically `51`, so the variable will equal `51` instead of the expected `35`.
 
 ## Chapter 5 - Constants and Strings
-### Constant variables
+### 5.1 — Constant variables (named constants)
 * Declaring const variables
 ```
 const double gravity { 9.8 };  // preferred use of const before type
@@ -463,23 +463,23 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 * Prefer `const` over using preprocessor macros since macros don't follow scope rules and can't be seen in debugger.
 * `const` and `volatile` are the only _type qualifiers_ in C++.
 
-### Section 5.2 - Literals
+### 5.2 - Literals
 * A `literal` is an actual value, e.g. `5`, `true`, `3.4`, `"Hello, world!"`, etc
 * The literal `5` is interpreted as type `int`. If necessary to be interpreted as another type, can use a suffix like `f`, e.g `5f` will be interpreted as type `float` instead of `double`.
 * Most suffixes are not case sensitive, though there are exceptions like `s` (string) and `sv` (string view).
 * C-style string literals are const objects that are created at the start of the program and exist for the entirety of the program. However, `std::string` and `std::string_view` are temporary objects that can be created and destroyed while the program is running.
 
-### Section 5.3 - Numeral systems (binary and hexadecimal)
+### 5.3 - Numeral systems (binary and hexadecimal)
 * Use prefix `0b` for binary literals (C++14 and newer). Can also use `'` as binary separator to make reading easier.
 * Use `std::hex` in conjunction with `std::cout` to print hex values.
 * The `std::bitset` type for binary variables can be used to print binary values using `std::cout`. However, with C++20, `std::format` can be used; with C++23, `std:println` can be used. 
 
-### Section 5.4 - The as-if rule and compile-time optimization
+### 5.4 - The as-if rule and compile-time optimization
 * Profiler - can be used to see how long parts of program take to run.
 * Compile time evaluation (optimization here):
     - _constant folding_: replacing constant operands with the single equivalent constant operand
     - _constant propagation_: replace variables that are always constant with the constant value
-    - _dead code eliminatin_: code that is executed but has no effect on the rest of the program
+    - _dead code elimination_: code that is executed but has no effect on the rest of the program
 * Use `const` to help the optimizer to determine when to use constant propagation.
 * Certain expressions must be able to be evaluated at compile time
     - `constexpr` initilization
@@ -489,6 +489,8 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
     - `constexpr` variables and functions
     - templates
     - static_assert
+
+### 5.5 — Constant expressions
 * Examples of _constant expressions_ that can be evaluated at compile-time:
     - literals (e.g. `5`, `1.2`)
     - operators with constant expression operands (e.g. `3+4`, `2*sizeof(int)`)
@@ -507,6 +509,8 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
     - operators with operands that are not constant expressions (e.g. anything using `std::cout` since `std::cout` is not a constant expression)
     - operators `new`, `delete`, `throw`, `typeid`, and `,` (comma operator)
 * Compiler is only _required_ to evaluate constant expressions at compile-time in contexts that _require_ a constant expression.
+* 
+### 5.6 — Constexpr variables
 * `constexpr` - like `const` but unlike `const`, can use it for decimal values, e.g. `constexpr double gravity{9.8};`. Not usually, but possible to use with function return values. See lesson _F.1 -- Constexpr functions_.
 * `const` vs `constexpr`
     - once initialized, cannot be changed (applies to both types)
@@ -516,7 +520,7 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 * Prefer using `constexpr` and `constexpr` functions over macros, with the exception of header guards, build configurations, etc.
 * Avoid using `const` in pass-by-value function parameters and for function return values.
 
-### Section 5.7: Introduction to std::string
+### 5.7: Introduction to std::string
 * While C-style strings can be used in C++, `std::string` and `std::stringview` are preferred because they're safer and easier to work with.
 * `std::string` can vary in size which makes it easier to work with (can dynamically assign strings of different lengths) but also makes its usage slower.
 * When using `std::cin` with `std::string`, `cin` extracts characters up to the first white space. Use `std::getline()` to get multiple words separated by white space.
@@ -535,7 +539,7 @@ int const sidesInSquare { 4 }; // "east const" style, okay but not preferred
 ```
 * `constexpr` doesn't usually support `std::string`, especially in earlier C++ versions. Use `std::string_view` instead.
 
-### Section 5.8 - std::string_view
+### 5.8 - std::string_view
 * Initializing and copying strings are expensive, probably since they're ultimately char arrays. Passing a string by value to a function creates a copy of the string (or char array), which is expensive. If possible for any "read only" use of a string, use `std::string_view` since this prevents expensive string copying.
 * C-style and `string` will implicitly convert to `string_view` if function parameter is `string_view`. For example, for a function with a `string_view` parameter, if the function is called with a C-style string as the parameter, it will implicitly convert to `string_view`.
 * However, `string_view` will not implicitly convert to `string`. Can `static_cast` or initialize a `string` with a `string_view`.
@@ -548,7 +552,7 @@ std::cout << "moo\n"sv; // sv suffix is a std::string_view literal
 * It's not necessary to initialize `string_view` objects with `string_view` literals, though this is fine. Initializing `string_view` objects with C-style strings is fine. Since C-style strings exist for the entirety of the program, you typically don't have to worry about the object that `string_view` is "looking at" being destroyed and thus resulting in undefined behavior.
 * Can use `constexpr` with `string_view` to create a true constant compile-time string.
 
-### Section 5.9 - std::string_view part 2
+### 5.9 - std::string_view part 2
 * Be aware that the original object that `string_view` was initialized to can be changed and `string_view` won't be automatically updated. This invalidates the `string_view` object and _will_ result in undefined and unexpected behavior. This is why `string_view` is sometimes called a _dangling_ view.
 * If the `string` that `string_view` was initialized to has changed, `string_view` can be revalidated by setting it to the string object again.
 * Generally avoid using `string_view` as return type except if
@@ -563,7 +567,7 @@ std::cout << "moo\n"sv; // sv suffix is a std::string_view literal
 * Many useful reference notes at the end of this section on when to use `string` vs `string_view`.
 
 ## Chapter 6 - Operators
-### Section 6.1 - Operator Precedence and Associativity
+### 6.1 - Operator Precedence and Associativity
 * If multiple operators are of the same level and near each other, they are grouped left to right, e.g. `7-4-1 ` becomes `(7-4)-1`.
 * See predecence/associativity chart in this section for reference when necessary.
 * Order of evaluating function arguments depends on the compiler. For example for `myFunc(x, y, z)`, Clang will evaluate `x`, `y`, and `z`. However, GCC will evaluate `z`, `x`, and `y`. This isn't an issue in this example, but suppose x, y, and z were function calls; then this could be an issue. In this case, explicitly assign the function calls (x, y, and z) before the larger `myFunc` function call, and place `x, y`, and z` in `myFunc`. See another example below.
@@ -579,13 +583,13 @@ int a{ getValue() }; // will execute first
 * The result of dividing two integers results in itself an integer with no fractional part, e.g. `7/4 = 1`.
 * To get a fractional division result, cast one or both operands as a floating type (`double` or `float`).
 
-### Section 6.4 - Increment and Decrement Operators 
+### 6.4 - Increment and Decrement Operators 
 * prefix, e.g. `++x` or `--x`, are pretty straightforward: the `++` or `--` is evaluated.
 * postfix, e.g. `x++` or `x--`, can be trickier. The original copy of x is evaluated (e.g. if used in a function or initialization, the original value is used). Then, after that line, x has the updated value.
 * Prefix has better performance than postfix. Since prefix is simpler and more efficient, it is preferred to use prefix when possible.
 * Avoid statements where the variable is used and its modified form, e.g. ` x+ ++x`. Exceptions are `x += y`.
 
-### Section 6.5 - The Comma Operator
+### 6.5 - The Comma Operator
 * Has the lowest precedence of all operators.
 * Allows evaluation of multiple expressions where a single expression is allowed. The example below prints out `3`.
 ```
@@ -596,7 +600,7 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
 ```
 * However, due to how tricky and easy it is to make mistakes with this operator, it is preferred only to use the comma operator with `for` loops.
 
-### Section 6.6 - The Ternary/Conditional Operator
+### 6.6 - The Ternary/Conditional Operator
 * Can use the ternary operator to initialize constant expressions if the operands are constant.
 * Be careful with the operator order precedence of the ternary operator and operator near it, as this could cause the code to not work as you expect. Wrap the ternary expression with parentheses if in doubt.
 * The second and third operands of the ternary operator must match in type if it's not a fundamental type (okay to mix signed and unsigned values?). The compiler may try to do this for you, but it may have unexpected results.
@@ -604,12 +608,12 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
 * If the first operand is a `constexpr`, use `if constexpr` instead of `(x ? y : z)`. `if constexpr` covered in section 8.4.
 * Avoid the ternary operator in complicated expressions.
 
-### Section 6.7 - Relational operators and floating point comparisons
+### 6.7 - Relational operators and floating point comparisons
 * Since floating point operations have some residual error, avoid using `==` and `!=` for comparing floating point variables that have undergone some mathematical process.
 * It is generally not safe to compare different types of float, e.g. `float` vs `double`.
 * This section has a decent algorithm for compariing floating type value as "close enough" using relative and absolute epsilons.
 
-### Section 6.8 - Logical Operators
+### 6.8 - Logical Operators
 * Short circuit evaluation (when only the left operand in a conditional expression is evaluated) may cause the right operand to not be evaluated.
     - Note that short circuit evaluation always occurs left to right and is an exception to the rule that operands may operate in any order.
     - Only the built-in versions of the logical operators perform short-circuit evaluation. If these operators are overloaded to work with your own type, your overloaded operator will not perform short-circuit evaluation.
@@ -622,7 +626,7 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
     - `not` for `!`
 
 ## Optional Chapter - Bit Manipulation
-### Section O.1 - Bit flags adn bit manipulation via std::bitset
+### O.1 - Bit flags adn bit manipulation via std::bitset
 * `std::bitset` is fast for bit manipulation at the cost of memory. The size of a `std::bitset` is usually 32 bits on 32 bit machines or 64 bits on 64 bit machines.
 * Below are some useful member functions of std::bitset
     - size() - number of bits
@@ -631,7 +635,7 @@ std::cout << (++x, ++y) << '\n'; // increment x and y, evaluates to the right op
     - any() - boolean if any bits set
     - none() - boolean for no bits set
 
-### Section O.2 - Bitwise operators
+### O.2 - Bitwise operators
 * Use unsigned integer types or `std::bitset` type when doing bit manipulation. Do not perform bit manipulation on signed integer types.
 * Below is an example of operator loading of the bitshift `<<` operator:
 ```
@@ -641,7 +645,7 @@ std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
 * Type promotion (increasing from a smaller type to a large type, e.g. from uint8 to uint16). If operands of a bitwise operator (`>>`, `<<`, `&`, `|`, `^`) are `unsigned short`, the operands will be promoted to `int` or `unsigned int`, including the result.
 * Be careful if using `std::bitset<x>` on `std::bitset<y>` when x and y are different sizes. Why would you even want to do this?
 
-### Section O.3 - Bit manipulation with bitwise operators and bit masks
+### O.3 - Bit manipulation with bitwise operators and bit masks
 * Check if bit on/off using AND with appropriate bitmask.
 * Set bit on/off using OR with appropriate bitmask.
 * To clear a bit (set to 0), use AND and NOT together.
@@ -651,7 +655,7 @@ std::cout << (x << 1) << '\n'; // print x left shifted by 1 (1100)
 * Use `std::hex` to read in a input stream value as a hex value.
 
 ## Chapter 7 - Scope, Duration, and Linkage
-### Section 7.2 - User-defined namespaces and the scope resolution operator
+### 7.2 - User-defined namespaces and the scope resolution operator
 * Newer and preferred naming convention for namespaces is to start with a capital letter.
 * `::` is the _scope resolution_ operator.
 * If the scope resolution operator `::` is used with nothing in front of it, the global namespace is used. This is commonly used inside a namespace to refer to the global namespace outside.
@@ -1285,11 +1289,57 @@ int main()
 ```
 * Quiz question 1 - I wrote my own factorial loop, but the author's is better.
 
-### 11.x — Chapter 11 summary and quiz
-* Start with question 3.
-
 ### 11.10 — Using function templates in multiple files
 * Templates are similar to inline functions where the compiler needs to see the full definition before it can be "called." Place template definition in header file and include in source files that call the template.
+
+## Chapter F — Constexpr functions
+### F.1 — Constexpr functions
+* `constexpr` functions are functions that can be evaluated at compile time. These functions can be used in constant expressions, such as initializing a `constexpr` variable (variable evaluated at compile time). For example,
+```
+#include <iostream>
+
+constexpr double calcCircumference(double radius)
+{
+    constexpr double pi { 3.14159265359 };
+    return 2.0 * pi * radius;
+}
+
+int main()
+{
+    constexpr double circumference { calcCircumference(3.0) };
+
+    std::cout << "Our circle has circumference " << circumference << "\n";
+
+    return 0;
+}
+```
+* Since `constexpr` functions are evaluated at compile time, the function is replaced with the computed result. In the example above, `calcCircumference(3.0)` is replaced with `18.8496`.
+* Since a `constexpr` function must be evaluated at run time, its arguments must be known at compile time, e.g. must be constant expressions. All expressions within the function also must be evaluatable at compile time.
+* `constexpr` functions can also be evaulated at runtime; however, they may return non-constexpr results. When used like this, the `constexpr` function runs like a normal function, and the `constexpr` has no effect.
+    * A `constexpr` function can be called using only a forward declaration when it's acting as a normal run time function and `constexpr` has no effect.
+
+### F.2 — Constexpr functions (part 2)
+* `constexpr` functions are only guaranteed to evaluate at runtime when the expression they're used in is also `constexpr`. Otherwise, the compiler decides to evaluate at either run or compile time.
+* Since `constexpr` functions may be evaluated at either compile or run time, verify the `constexpr` function actually evaluates at compile time by forcing it to be evaluated at compile time, e.g. by using the function in a `constexpr` initialization.
+* Parameters for `constexpr` functions are not `constexpr` themselves. They can be of type `const` but they will be treated as runtime constants.
+* `constexpr` functions are implicitly inline, so the full definition must appear before called, similar to inline functions and function templates. Because of this, if using in multiple files, place `constexpr` definition in a header file and include in source files that call the function. If only calling from one source file, just place definition in the same source file before the call.
+
+### F.3 — Constexpr functions (part 3) and consteval
+* Starting with C++20, `consteval` functions are guaranteed to evaluate during compile-time; otherwise, a compilation will fail.
+* However, unlike `constexpr`, `consteval`, cannot also run like a normal run-time function.
+* Recall that `constexpr` functions are not guaranteed to be evaluated at compile time unless it's used in a constant expression. This is where `consteval` is beneficial.
+* Can use `std::is_constant_evaluated()` or `if consteval` (C++20) to check if the context is a compile time or run time. For example, this could be used in an `if/else` check and can execute different statements depending on if it's being evaluated during compile time or during runtime. See this section for two examples of executing different code depending on whether code evaluation is during compile time or during runtime.
+
+### F.4 — Constexpr functions (part 4)
+* Local variables inside a `constexpr` or `consteval` can be modified.
+* `constexpr` and `consteval` functions can use function parameters and local variables as arguments in `constexpr` calls.
+* `constexpr` functions can call non-constexpr function only in a non-constant context. This is not recommended and should be avoided when possible.
+* A **_pure_** function always returns the same result when given the same arguments and also has no side effects (e.g. doesn't change the value of a static local or global variable, doesn't do input or output, etc.). These functions in general should be made `constexpr`.
+* In general, make `constexpr` functions for those that can be evaluated as part of a constant expression.
+* A downside of `constexpr` though is they are harder to debug since you can't breakpoint or step through them.
+* It's okay to `constexpr` a function that may not always be evaluated at compile-time because the compiler may try to still optimize the function. Also, even if the function isn't currently called in a compile-time context, it might be later, which would then reap the compile-time benefits.
+
+### F.X — Chapter F summary and quiz
 
 ## Chapter 12 - Compound Types: References and Pointers
 ### 12.2 - Value categories (lvalues and rvalues)
