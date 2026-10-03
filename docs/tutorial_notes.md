@@ -1342,10 +1342,14 @@ int main()
 ### F.X — Chapter F summary and quiz
 
 ## Chapter 12 - Compound Types: References and Pointers
-### 12.2 - Value categories (lvalues and rvalues)
-* An _lvalue_ (_left_ or _locator_ value) evaluates to an object with an identifier.
+
+### 12.2 — Value categories (lvalues and rvalues)
+* Expression _type_ must be known at compile time. Expression _value_ can be known at either compile or run time.
+* An _lvalue_ (_left_ or _locator_ value) evaluates to an object with an identifier, usually a variable.
 * An _rvalue_ (_right_ value) evaluates to a value (usually a literal, e.g. `5` or `3.8`).
-### 12.3 - Lvalue references
+
+### 12.3 — Lvalue references
+* reference - alias for an existing object.
 * lvalue reference variable - reference variable to an lvalue (usually another variable). So a variable that's a reference to another variable.
 * The variable's value can be changed by either the reference or the actual variable.
 * References must be initialized (unlike pointers).
@@ -1362,10 +1366,10 @@ int main()
 ### 12.4 — Lvalue references to const
 * Must use `const` references to refer to `const` values, e.g.
 ```
-const int x { 5 };      // x is a non-modifiable (const) lvalue
-
-int& ref { x };         // error: ref can not bind to non-modifiable lvalue
-const int& ref { x };   // okay: ref is a an lvalue reference to a const value
+    const int x { 5 };      // x is a non-modifiable (const) lvalue
+    
+    int& ref { x };         // error: ref can not bind to non-modifiable lvalue
+    const int& ref { x };   // okay: ref is a an lvalue reference to a const value
 ```
 * `const` reference can only read and not change the referent value.
 * `const` reference can also be used for variables. However, the reference can only read the referenced variable. The reference cannot be used to change the referenced variable's value.
@@ -1373,6 +1377,194 @@ const int& ref { x };   // okay: ref is a an lvalue reference to a const value
 * `const` references can be initialized to rvalues, e.g. literals. For example `const int& myRef{5};`
 * A reference can be bound to a different type, e.g. `const int& intRef {'a'}`.
     - HOWEVER, when this is done, a temporary copy of the referent is made and is what the reference is attached to. So if the **original** object is modified, the reference won't reflect this since it's attached to the **copy** and not the original.
+
+### 12.5 — Pass by lvalue reference
+* For function arguments, _pass by reference_ is similar to _pass by pointer_ in that the original object is being used instead of a copy. _Pass by reference_ doesn't need dereferencing or null pointer checking, but unlike a pointer, a reference/alias can't be reseated. Below is an example of _pass by reference_:
+```
+    #include <iostream>
+    #include <string>
+    
+    void printValue(std::string& y) // type changed to std::string&
+    {
+        std::cout << y << '\n';
+    } // y is destroyed here
+    
+    int main()
+    {
+        std::string x { "Hello, world!" };
+    
+        printValue(x); // x is now passed by reference into reference parameter y (inexpensive)
+    
+        return 0;
+    }
+```
+* Using a non-const reference for a function definition's argument allows function calls to only use non-const variables for that parameter, e.g. a literal or a const variable can't be passed into that argument. For example:
+```
+    #include <iostream>
+    
+    void printValue(int& y) // y only accepts modifiable lvalues
+    {
+        std::cout << y << '\n';
+    }
+    
+    int main()
+    {
+        int x { 5 };
+        printValue(x); // ok: x is a modifiable lvalue
+    
+        const int z { 5 };
+        printValue(z); // error: z is a non-modifiable lvalue
+    
+        printValue(5); // error: 5 is an rvalue
+    
+        return 0;
+    }
+```
+
+### 12.6 — Pass by const lvalue reference
+* Passing a value by a const reference (in the function definition) allows function calls to use non-const, const, or literal values. Inside the function, the referenced value cannot be modified, which may be desireable. For example:
+```
+    #include <iostream>
+    
+    void printRef(const int& y) // y is a const reference
+    {
+        std::cout << y << '\n';
+    }
+    
+    int main()
+    {
+        int x { 5 };
+        printRef(x);   // ok: x is a modifiable lvalue, y binds to x
+    
+        const int z { 5 };
+        printRef(z);   // ok: z is a non-modifiable lvalue, y binds to z
+    
+        printRef(5);   // ok: 5 is rvalue literal, y binds to temporary int object
+    
+        return 0;
+    }
+```
+* Prefer passing by const reference instead of by non-const reference unless there's a specific reason, e.g. the referenced value needs to be modified.
+* For pass by reference arguments, if the passed in argument type does not match the type of reference in the function definition, a conversion may occur, producing a copy, and the reference will be tied to this copy rather than the original referenced value. This is not optimal because
+    - a copy has been made
+    - the original referenced object is not being referenced
+* Pass fundamental types by value and class types by reference. See this section for more details.
+* Prefer `std::string_view` over `const std::string&`. See this section for more details as to why this is preferred.
+
+### 12.7 — Introduction to pointers
+* Pointers aren't required to be initialized upon creation, but it is best practice to do so. See below:
+```
+    int main()
+    {
+        int x{ 5 };
+    
+        int* ptr;        // an uninitialized pointer (holds a garbage address)
+        int* ptr2{};     // a null pointer (we'll discuss these in the next lesson)
+        int* ptr3{ &x }; // a pointer initialized with the address of variable x
+    
+        return 0;
+    }
+```
+* With one exception, pointers cannot be initialized with a literal value.
+* The address operator `&` doesn't return a literal; it returns a pointer:
+```
+    #include <iostream>
+    #include <typeinfo>
+    
+    int main()
+    {
+    	int x{ 4 };
+    	std::cout << typeid(x).name() << '\n';  // print the type of x
+    	std::cout << typeid(&x).name() << '\n'; // print the type of &x
+    
+    	return 0;
+    }
+```
+This prints out:
+```
+    int
+    int *
+```
+* _Dangling pointer_ - a pointer holding the address of an object that is no longer valid, e.g. the object was destroyed.
+
+### 12.8 — Null pointers
+* _null pointer_ - a pointer not pointing to anything:
+```
+    int* ptr {}; // ptr is a null pointer and is not holding an address
+```
+* `nullptr` - keyword for null pointer literal:
+```
+    int* ptr { nullptr }; // can use nullptr to initialize a pointer to be a null pointer
+    int value { 5 };
+    int* ptr2 { &value }; // ptr2 is a valid pointer
+    ptr2 = nullptr; // Can assign nullptr to make the pointer a null pointer
+    someFunction(nullptr); // we can also pass nullptr to a function that has a pointer parameter
+```
+* Use `nullptr` literal for initialization, assignment, passing a null pointer to a function, or in `if` cases to check if a pointer is null.
+* While `nullptr` can be used to check if a pointer is null, can also just use the fact that a null pointer converts to Boolean false and a pointer with an address converts to Boolean true:
+```
+    int x { 5 };
+    int* ptr { &x };
+
+    // pointers convert to Boolean false if they are null, and Boolean true if they are non-null
+    if (ptr) // implicit conversion to Boolean
+        std::cout << "ptr is non-null\n";
+    else
+        std::cout << "ptr is null\n";
+
+    int* nullPtr {};
+    std::cout << "nullPtr is " << (nullPtr ? "non-null\n" : "null\n"); // implicit conversion to Boolean
+```
+* No easy way to detect if a pointer holds a valid address or is dangling. Therefore, whenever the object a pointer is pointing to is destroyed, set it to null. Thus, all pointers with an address are valid and the rest are null, and then you only need to check if a pointer is null or not. However, this requires the programmer to actively set pointers to null when objects are destroyed.
+* Favor reference over pointer unless the additional capability of a pointer is needed.
+
+### 12.9 — Pointers and const
+* _Normal_ pointers cannot point to a const variable:
+```
+    const int x { 5 }; // x is now const
+    int* ptr { &x };   // compile error: cannot convert from const int* to int*
+```
+* _pointer to const_ allows a pointer to point to a const value:
+```
+    const int x{ 5 };
+    const int* ptr { &x }; // okay: ptr is pointing to a "const int"
+    *ptr = 6; // not allowed: we can't change a const value
+```
+* A _pointer to const_ can point to both const and non-const values. However, in both cases, the pointer can't be used to modify the dereferenced value. The _pointer to const_ basically acts like a _read only_ for a variable. It doesn't matter if the variable is const or not.
+* A _const pointer_ is a pointer whose address cannot be changed after initialization. Note that the `const` keyword is used after the asterisk:
+```
+    int x{ 5 };
+    int y{ 6 };
+
+    int* const ptr { &x }; // okay: the const pointer is initialized to the address of x
+    ptr = &y; // error: once initialized, a const pointer can not be changed.
+```
+* However, if the value being pointed to is non-const, the _const pointer_ can still modify the dereferenced value.
+```
+    int x{ 5 };
+    int* const ptr { &x }; // ptr will always point to x
+
+    *ptr = 6; // okay: the value being pointed to is non-const
+```
+* It is possible to have both a const pointer pointing to a const value, meaning a pointer whose address cannot be changed and whose dereferenced value cannot be changed:
+```
+    int value { 5 };
+    const int* const ptr { &value }; // a const pointer to a const value
+```
+* Summary:
+```
+    int v{ 5 };
+
+    int* ptr0 { &v };             // points to an "int" but is not const itself.  We can modify the value or the address.
+    const int* ptr1 { &v };       // points to a "const int" but is not const itself.  We can only modify the address.
+    int* const ptr2 { &v };       // points to an "int" and is const itself.   We can only modify the value.
+    const int* const ptr3 { &v }; // points to a "const int" and is const itself.  We can't modify the value nor the address.
+
+    // if the const is on the left side of the *, the const belongs to the value
+    // if the const is on the right side of the *, the const belongs to the pointer
+```
+
+### 12.10 — Pass by address
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
