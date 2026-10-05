@@ -1565,6 +1565,214 @@ This prints out:
 ```
 
 ### 12.10 — Pass by address
+* _pass by address_ - passing the address of a variable to a function. In the function definition, the argument is a pointer, so either a pointer variable or a variable's address must be passed into this argument.
+* Below is an example of 3 ways of passing a `string` into a function: by value, by reference, and by address:
+```
+    #include <iostream>
+    #include <string>
+    
+    void printByValue(std::string val) // The function parameter is a copy of str
+    {
+        std::cout << val << '\n'; // print the value via the copy
+    }
+    
+    void printByReference(const std::string& ref) // The function parameter is a reference that binds to str
+    {
+        std::cout << ref << '\n'; // print the value via the reference
+    }
+    
+    void printByAddress(const std::string* ptr) // The function parameter is a pointer that holds the address of str
+    {
+        std::cout << *ptr << '\n'; // print the value via the dereferenced pointer
+    }
+    
+    int main()
+    {
+        std::string str{ "Hello, world!" };
+    
+        printByValue(str); // pass str by value, makes a copy of str
+        printByReference(str); // pass str by reference, does not make a copy of str
+        printByAddress(&str); // pass str by address, does not make a copy of str
+    
+        return 0;
+    }
+```
+* If a _pass-by-address_ function is only using the value and not modifying it, use a _pointer-to-const_:
+```
+    void changeValue(const int* ptr) // note: ptr is now a pointer to a const
+    {
+        *ptr = 6; // error: can not change const value
+    }
+```
+* Do not use `const` pointers (pointer can't change after initialization) for function parameters unless for a specific reason.
+* If the program should stop execution if a null pointer is passed into a function, an `assert` testing for null can be placed in the beginning of the function.
+* If the program should continue running, a check for null and an early return can be placed at the start of the function.
+* Prefer pass by `const` reference. `const` allows passing in literals.
+* Pass by reference when you can. Pass by address when you must.
+
+### 12.11 — Pass by address (part 2)
+* For a function to change the address a pointer is pointing to (is holding), a reference to the pointer can be passed into a function. The function changing this value will be changing the actual pointer address the reference is referencing. I assume a pointer to a pointer would also work.
+```
+    #include <iostream>
+    
+    void nullify(int*& refptr) // refptr is now a reference to a pointer
+    {
+        refptr = nullptr; // Make the function parameter a null pointer
+    }
+    
+    int main()
+    {
+        int x{ 5 };
+        int* ptr{ &x }; // ptr points to x
+    
+        std::cout << "ptr is " << (ptr ? "non-null\n" : "null\n");
+    
+        nullify(ptr);
+    
+        std::cout << "ptr is " << (ptr ? "non-null\n" : "null\n");
+        return 0;
+    }
+```
+* Since functions can be overloaded in C++, depending on how `NULL` is defined by the compiler, this might lead to undesired results. For example, assume there are two functions of the same name, with one taking an integer argument, and the other taking an integer pointer argument. If `NULL` is used, which function will be called? If `NULL` is defined as `0`, then the integer function will be called, which is not the desired one. `nullptr` removes this ambiguity; therefore, use `nullptr`.
+
+### 12.12 — Return by reference and return by address
+* For functions returning by reference, the reference must live beyond the scope of the function, or a dangling reference will occur. Do not return (non-static) local variables by reference. Below is a good, working example:
+```
+    #include <iostream>
+    #include <string>
+    
+    const std::string& getProgramName() // returns a const reference
+    {
+        static const std::string s_programName { "Calculator" }; // has static duration, destroyed at end of program
+    
+        return s_programName;
+    }
+    
+    int main()
+    {
+        std::cout << "This program is named " << getProgramName();
+    
+        return 0;
+    }
+```
+* Reference lifetime extension doesn't work across function boundaries:
+```
+    #include <iostream>
+    
+    const int& returnByConstReference(const int& ref)
+    {
+        return ref;
+    }
+    
+    int main()
+    {
+        // case 1: direct binding
+        const int& ref1 { 5 }; // extends lifetime
+        std::cout << ref1 << '\n'; // okay
+    
+        // case 2: indirect binding
+        const int& ref2 { returnByConstReference(5) }; // binds to dangling reference
+        std::cout << ref2 << '\n'; // undefined behavior
+    
+        return 0;
+    }
+```
+* Don't return non-static local variables by reference.
+* Avoid returning references to (non-const) local static variables.
+* Assigning/initializing a normal variable with a returned reference makes a copy:
+```
+    #include <iostream>
+    #include <string>
+    
+    const int& getNextId()
+    {
+        static int s_x{ 0 };
+        ++s_x;
+        return s_x;
+    }
+    
+    int main()
+    {
+        const int id1 { getNextId() }; // id1 is a normal variable now and receives a copy of the value returned by reference from getNextId()
+        const int id2 { getNextId() }; // id2 is a normal variable now and receives a copy of the value returned by reference from getNextId()
+    
+        std::cout << id1 << id2 << '\n';
+    
+        return 0;
+    }
+```
+* It is okay to return a reference argument by reference
+```
+    #include <iostream>
+    #include <string>
+    
+    // Takes two std::string objects, returns the one that comes first alphabetically
+    const std::string& firstAlphabetical(const std::string& a, const std::string& b)
+    {
+    	return (a < b) ? a : b; // We can use operator< on std::string to determine which comes first alphabetically
+    }
+    
+    int main()
+    {
+    	std::string hello { "Hello" };
+    	std::string world { "World" };
+    
+    	std::cout << firstAlphabetical(hello, world) << '\n';
+    
+    	return 0;
+    }
+```
+* It’s okay for an rvalue passed by const reference to be returned by const reference:
+```
+    #include <iostream>
+    #include <string>
+    
+    const std::string& foo(const std::string& s)
+    {
+        return s;
+    }
+    
+    std::string getHello()
+    {
+        return "Hello"; // implicit conversion to std::string
+    }
+    
+    int main()
+    {
+        const std::string s{ foo(getHello()) };
+    
+        std::cout << s;
+    
+        return 0;
+    }
+```
+* Caller can modify values through the reference:
+```
+    #include <iostream>
+    
+    // takes two integers by non-const reference, and returns the greater by reference
+    int& max(int& x, int& y)
+    {
+        return (x > y) ? x : y;
+    }
+    
+    int main()
+    {
+        int a{ 5 };
+        int b{ 6 };
+    
+        max(a, b) = 7; // sets the greater of a or b to 7
+    
+        std::cout << a << b << '\n';
+    
+        return 0;
+    }
+```
+    - This prints out `57`.
+    - The expression `max(a, b) = 7` effectively resolves to `b = 7`.
+* Prefer return by reference over return by address unless the ability to return “no object” (using nullptr) is important.
+
+### 12.13 — In and out parameters
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
