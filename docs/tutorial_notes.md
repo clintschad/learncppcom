@@ -1773,6 +1773,196 @@ This prints out:
 * Prefer return by reference over return by address unless the ability to return “no object” (using nullptr) is important.
 
 ### 12.13 — In and out parameters
+* Input parameter - parameter _only_ used for receiving input from the caller
+* Output parameter - parameter _only_ used for returning information back to the caller. By convention, output parameters are typically the rightmost parameters.
+    - Avoid out-parameters, except in cases where there is no better option.
+    - Prefer pass-by-reference over pass-by-address for non-optional output-parameters.
+* In/out parameter - parameter used as both an input from the caller and as output data to be returned to the caller.
+* When using pass-by-reference, prefer pass by const reference.
+
+## 12.14  — Type deduction with pointers, references, and const
+* Remember from section 10.8 that variables of type `auto` will drop `const` if deducing type from another `const` variable.
+* Type deduction also drops references.
+* Top-level and low-level const
+    - _top-level const_ refers to `const` being applied to the object itself, e.g. a `const` pointer whose address cannot be changed once initialized.
+    - _low-level const_ refers to `const` being applied to the object pointed to or referenced.
+* A pointer can have both top and low level const, e.g.
+```
+    const int* const ptr; // the left const is low-level, the right const is top-level
+```
+* If the initializer is a reference to const, the reference is droped first (and then reapplied if applicable), and then any top level const is dropped from the result. See example below:
+```
+    #include <string>
+    
+    const std::string& getConstRef(); // some function that returns a reference to const
+    
+    int main()
+    {
+        auto ref1{ getConstRef() }; // std::string (reference dropped, then top-level const dropped from result)
+    
+        return 0;
+    }
+```
+* In the example above, since `getConstRef()` returns a `const std::string&`, the reference is dropped first, leaving `const std::string`. This const is now a top-level const, so it is also dropped, leaving the deduced type as `std::string`.
+* Below is another example of type const and type deduction:
+```
+    #include <string>
+    
+    const std::string& getConstRef(); // some function that returns a const reference
+    
+    int main()
+    {
+        auto ref1{ getConstRef() };        // std::string (reference and top-level const dropped)
+        const auto ref2{ getConstRef() };  // const std::string (reference dropped, const dropped, const reapplied)
+    
+        auto& ref3{ getConstRef() };       // const std::string& (reference dropped and reapplied, low-level const not dropped)
+        const auto& ref4{ getConstRef() }; // const std::string& (reference dropped and reapplied, low-level const not dropped)
+    
+        return 0;
+    }
+```
+* As seen in the example above, the last 2 examples produce the same result. However, prefer the style of the last example (adding explicit `const`) because even though it's unnecessary, it's more explicit.
+* `constexpr` is not part of an expression's type, so it is not deduced by `auto`. See this section for an example.
+* Unlike references, type deduction does not drop pointers. See example below:
+```
+    #include <string>
+    
+    std::string* getPtr(); // some function that returns a pointer
+    
+    int main()
+    {
+        auto ptr1{ getPtr() }; // std::string*
+    
+        return 0;
+    }
+```
+* `auto*` can be used to make it clearer that the deduced type is a pointer:
+```
+    #include <string>
+    
+    std::string* getPtr(); // some function that returns a pointer
+    
+    int main()
+    {
+        auto ptr1{ getPtr() };  // std::string*
+        auto* ptr2{ getPtr() }; // std::string*
+    
+        return 0;
+    }
+```
+* `auto` vs `auto*`. See this section for more details.
+* Summary of top vs low-level const, and type deduction with references and pointers:
+Top-level vs low-level const:
+
+A top-level const applies to the object itself (e.g. const int x or int* const ptr).
+A low-level const applies to the object accessed through a reference or pointer (e.g. const int& ref, const int* ptr).
+What type deduction deduces:
+
+Type deduction first drops any references (unless the deduced type is defined as a reference). For a const reference, dropping the reference will cause the (low-level) const to become a top-level const.
+Type deduction then drops any top-level const (unless the deduced type is defined as const or constexpr).
+Constexpr is not part of the type system, so is never deduced. It must always be explicitly applied to the deduced type.
+Type deduction does not drop pointers.
+Always explicitly define the deduced type as a reference, const, or constexpr (as applicable), and even if these qualifiers are redundant because they would be deduced. This helps prevent errors and makes it clear what your intent is.
+Type deduction and pointers:
+
+When using auto, the deduced type will be a pointer only if the initializer is a pointer. When using auto*, the deduced type is always a pointer, even if the initializer is not a pointer.
+auto const and const auto both make the deduced pointer a const pointer. There is no way to explicitly specify a low-level const (pointer-to-const) using auto.
+auto* const also makes the deduced pointer a const pointer. const auto* makes the deduced pointer a pointer-to-const. If these are hard to remember, int* const is a const pointer (to int), so auto* const must be a const pointer. const int* is a pointer-to-const (int), so const auto* must be a pointer-to-const)
+Consider using auto* over auto when deducing a pointer type, as it allows you to explicitly reapply both the top-level and low-level const, and will error if a pointer type is not deduced.
+
+### 12.15 — std::optional
+`std::optional` - can use this to have an optional return value. It's similar to how a pointer can have a value or be NULL. `std:optional` can be handy for math functions that can output any numerical value but an error value status is also needed, e.g. the divisor argument into a division function is 0. See example below:
+```
+#include <iostream>
+#include <optional> // for std::optional (C++17)
+
+// Our function now optionally returns an int value
+std::optional<int> doIntDivision(int x, int y)
+{
+    if (y == 0)
+        return {}; // or return std::nullopt
+    return x / y;
+}
+
+int main()
+{
+    std::optional<int> result1 { doIntDivision(20, 5) };
+    if (result1) // if the function returned a value
+        std::cout << "Result 1: " << *result1 << '\n'; // get the value
+    else
+        std::cout << "Result 1: failed\n";
+
+    std::optional<int> result2 { doIntDivision(5, 0) };
+
+    if (result2)
+        std::cout << "Result 2: " << *result2 << '\n';
+    else
+        std::cout << "Result 2: failed\n";
+
+    return 0;
+}
+```
+* Pros and cons of returning `std::optional`
+    - Pros:
+        - effectively documents that a function may or may not return a value.
+        - don't need to remember which value is being returned as sentinel.
+    - Cons:
+        - Must verify `std::optional` contains a value before dereferencing. Dereferncing `std::optional` with no value results in undefined behavior.
+        - `std::optional` does not provide a way to pass back info about why the function failed.
+* Best practice: return a `std::optional` for functions that may fail unless it needs to return additional information about why it failed.
+* RELATED: lookup `std::expected`
+* `std::optional` can be used as an optional function parameter. Instead of:
+```
+    #include <iostream>
+    
+    void printIDNumber(const int *id=nullptr)
+    {
+        if (id)
+            std::cout << "Your ID number is " << *id << ".\n";
+        else
+            std::cout << "Your ID number is not known.\n";
+    }
+    
+    int main()
+    {
+        printIDNumber(); // we don't know the user's ID yet
+    
+        int userid { 34 };
+        printIDNumber(&userid); // we know the user's ID now
+    
+        return 0;
+    }
+```
+This can be done:
+```
+    #include <iostream>
+    #include <optional>
+    
+    void printIDNumber(std::optional<const int> id = std::nullopt)
+    {
+        if (id)
+            std::cout << "Your ID number is " << *id << ".\n";
+        else
+            std::cout << "Your ID number is not known.\n";
+    }
+    
+    int main()
+    {
+        printIDNumber(); // we don't know the user's ID yet
+    
+        int userid { 34 };
+        printIDNumber(userid); // we know the user's ID now
+    
+        printIDNumber(62); // we can also pass an rvalue
+    
+        return 0;
+    }
+```
+* However, `std::optional` makes a copy of its argument, so only use this when a parameter would normally be passed by value.
+* Best practice: prefer `std::optional` for optional return types. Prefer function overloading for optional function parameters (when possible). Otherwise, use `std::optional<T>` for optional arguments when `T` would normally be passed by value. Favor `const T*` when `T` is expensive to copy.
+
+### 12.x — Chapter 12 summary and quiz
+Continue with question 5.
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
