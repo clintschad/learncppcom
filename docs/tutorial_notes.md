@@ -1961,8 +1961,158 @@ This can be done:
 * However, `std::optional` makes a copy of its argument, so only use this when a parameter would normally be passed by value.
 * Best practice: prefer `std::optional` for optional return types. Prefer function overloading for optional function parameters (when possible). Otherwise, use `std::optional<T>` for optional arguments when `T` would normally be passed by value. Favor `const T*` when `T` is expensive to copy.
 
-### 12.x — Chapter 12 summary and quiz
-Continue with question 5.
+## Chapter 13 — Compound Types: Enums and Structs
+### 13.1 — Introduction to program-defined (user-defined) types
+* C++ has two categories of compound types for program-defined types:
+    - Enumerated types (unscoped and scoped enumeration)
+    - Class types (structs, classes, and unions)
+* Defining an object, e.g. a struct definition, does not take up any memory. It's just telling the compiler what that struct looks like. Instantiating a struct takes memory. Our struct definition is a _program-defined_ type.
+* Type definitions must end with a semicolon.
+* Start program-defined type names with a capital letter.
+* A program-defined type used in only one source file should be defined in that file as close to its first use as possible.
+* A program-defined type used in multiple source files should be defined in a header file with the same name as the program-defined type and then #included in each source file as needed.
+* _User-defined types_ include types created by the user (e.g. custom structs or classes) but they also include the standard library (e.g. `std::string` is considered a _user-defined_ type).
+* _Program-defined types_ include _only_ types created by the user, i.e. the standard library is not included.
+
+### 13.2 — Unscoped enumerations
+* Use the `enum` keyword to define an _unscoped_ enumeration. For example,
+```
+    // Define a new unscoped enumeration named Color
+    enum Color
+    {
+        // Here are the enumerators
+        // These symbolic constants define all the possible values this type can hold
+        // Each enumerator is separated by a comma, not a semicolon
+        red,
+        green,
+        blue, // trailing comma optional but recommended
+    }; // the enum definition must end with a semicolon
+    
+    int main()
+    {
+        // Define a few variables of enumerated type Color
+        Color apple { red };   // my apple is red
+        Color shirt { green }; // my shirt is green
+        Color cup { blue };    // my cup is blue
+    
+        Color socks { white }; // error: white is not an enumerator of Color
+        Color hat { 2 };       // error: 2 is not an enumerator of Color
+    
+        return 0;
+    }
+```
+* In an enum definition, the trailing comma (after the last enum value) is not necessary but is recommended for consistency.
+* Enums are implicitly constexpr.
+* _enumeration_ or _enumerated type_ is the program-defined type itself (e.g. `Color`). Prefer naming these starting with a capital letter.
+* _enumerator_ is a specific named value belonging to the enumeration (e.g. `red`). Prefer naming these starting with a lower case letter.
+* Can use enumerators to set certain bits, which can be useful for bit flags. For example,
+```
+    #include <bitset>
+    #include <iostream>
+    
+    namespace Flags
+    {
+        enum State
+        {
+            isHungry,
+            isSad,
+            isMad,
+            isHappy,
+            isLaughing,
+            isAsleep,
+            isDead,
+            isCrying,
+        };
+    }
+    
+    int main()
+    {
+        std::bitset<8> me{};
+        me.set(Flags::isHappy);
+        me.set(Flags::isLaughing);
+    
+        std::cout << std::boolalpha; // print bool as true/false
+    
+        // Query a few states (we use the any() function to see if any bits remain set)
+        std::cout << "I am happy? " << me.test(Flags::isHappy) << '\n';
+        std::cout << "I am laughing? " << me.test(Flags::isLaughing) << '\n';
+    
+        return 0;
+    }
+```
+* Enumerated types within the same namespace can't have the same enumerators, e.g.
+```
+enum Color
+{
+    red,
+    green,
+    blue, // blue is put into the global namespace
+};
+
+enum Feeling
+{
+    happy,
+    tired,
+    blue, // error: naming collision with the above blue
+};
+
+int main()
+{
+    Color apple { red }; // my apple is red
+    Feeling me { happy }; // I'm happy right now (even though my program doesn't compile)
+
+    return 0;
+}
+```
+* Unscoped enumerations provide a scope region for their enumerators, e.g.
+```
+    enum Color
+    {
+        red,
+        green,
+        blue, // blue is put into the global namespace
+    };
+    
+    int main()
+    {
+        Color apple { red }; // okay, accessing enumerator from global namespace
+        Color raspberry { Color::red }; // also okay, accessing enumerator from scope of Color
+    
+        return 0;
+    }
+```
+* However, most often, unscoped enumerators are accessed without using the scope resolution operator.
+* To prevent conflicts with enumerators from other enumerations, namespaces can be used. For example,
+```
+    namespace Color
+    {
+        // The names Color, red, blue, and green are defined inside namespace Color
+        enum Color
+        {
+            red,
+            green,
+            blue,
+        };
+    }
+    
+    namespace Feeling
+    {
+        enum Feeling
+        {
+            happy,
+            tired,
+            blue, // Feeling::blue doesn't collide with Color::blue
+        };
+    }
+    
+    int main()
+    {
+        Color::Color paint{ Color::blue };
+        Feeling::Feeling me{ Feeling::blue };
+    
+        return 0;
+    }
+```
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
