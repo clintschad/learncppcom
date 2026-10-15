@@ -2114,6 +2114,425 @@ int main()
     }
 ```
 
+### 13.3 — Unscoped enumerator integral conversions
+* Enumerators are usually assigned an integer value from 0 to n, but values can be explicitly assigned, including negative integers. For example,
+```
+enum Animal
+{
+    cat = -3,    // values can be negative
+    dog,         // -2
+    pig,         // -1
+    horse = 5,
+    giraffe = 5, // shares same value as horse
+    chicken,     // 6
+};
+```
+* Enumerators can have the same value, meaning they are interchangeable, though this should be avoided.
+* Enumerations, if not explicitly initialized, are initialized to a default value of 0, even if 0 is not an enumerator. Therefore, make 0 the best default for the enumeration. If no good default exists, consider using an “invalid” or “unknown” enumerator for 0, so that the state is explicitly documented and can be explicitly handled where appropriate.
+* C++ does not specify the _underlying type_ or _base_ of an enumeration type. This is up to the compiler. The underlying type can, however, be explicitly set. For example,
+```
+#include <cstdint>  // for std::int8_t
+#include <iostream>
+
+// Use an 8-bit integer as the enum underlying type
+enum Color : std::int8_t
+{
+    black,
+    red,
+    blue,
+};
+
+int main()
+{
+    Color c{ black };
+    std::cout << sizeof(c) << '\n'; // prints 1 (byte)
+
+    return 0;
+}
+```
+* Specify the base type of an enumeration only when necessary.
+* Warning: since `std::int8_t` and `std::uint8_t` are usually type aliases for `char` types, using either of these types as the enum base will most likely cause the enumerators to print as `char` values rather than `int` values.
+* Only C++17 allows list-initialization of an enumeration variable directly with an integer, e.g. `Pet pet1 { 2 };`. However, `static_cast` can always be used to first cast the initialization integer to the enumeration type, e.g. `Pet pet1 { static_cast<Pet>(2) };`
+
+### 13.4 — Converting an enumeration to and from a string
+* Can use a function that uses a switch statement using the enumerators. For example:
+```
+#include <iostream>
+#include <string_view>
+
+enum Color
+{
+    black,
+    red,
+    blue,
+};
+
+constexpr std::string_view getColorName(Color color)
+{
+    switch (color)
+    {
+    case black: return "black";
+    case red:   return "red";
+    case blue:  return "blue";
+    default:    return "???";
+    }
+}
+
+int main()
+{
+    constexpr Color shirt{ blue };
+
+    std::cout << "Your shirt is " << getColorName(shirt) << '\n';
+
+    return 0;
+}
+```
+* One way an enumerated variable can be set from user input is by having the user input a corresponding enumerator integer and casting it. For example,
+```
+#include <iostream>
+#include <string_view>
+
+enum Pet
+{
+    cat,   // 0
+    dog,   // 1
+    pig,   // 2
+    whale, // 3
+};
+
+constexpr std::string_view getPetName(Pet pet)
+{
+    switch (pet)
+    {
+    case cat:   return "cat";
+    case dog:   return "dog";
+    case pig:   return "pig";
+    case whale: return "whale";
+    default:    return "???";
+    }
+}
+
+int main()
+{
+    std::cout << "Enter a pet (0=cat, 1=dog, 2=pig, 3=whale): ";
+
+    int input{};
+    std::cin >> input; // input an integer
+
+    if (input < 0 || input > 3)
+        std::cout << "You entered an invalid pet\n";
+    else
+    {
+        Pet pet{ static_cast<Pet>(input) }; // static_cast our integer to a Pet
+        std::cout << "You entered: " << getPetName(pet) << '\n';
+    }
+
+    return 0;
+}
+```
+* Another way to set an enumerated variable with user input is by comparing string input from the user. For example:
+```
+#include <iostream>
+#include <optional> // for std::optional
+#include <string>
+#include <string_view>
+
+enum Pet
+{
+    cat,   // 0
+    dog,   // 1
+    pig,   // 2
+    whale, // 3
+};
+
+constexpr std::string_view getPetName(Pet pet)
+{
+    switch (pet)
+    {
+    case cat:   return "cat";
+    case dog:   return "dog";
+    case pig:   return "pig";
+    case whale: return "whale";
+    default:    return "???";
+    }
+}
+
+constexpr std::optional<Pet> getPetFromString(std::string_view sv)
+{
+    // We can only switch on an integral value (or enum), not a string
+    // so we have to use if-statements here
+    if (sv == "cat")   return cat;
+    if (sv == "dog")   return dog;
+    if (sv == "pig")   return pig;
+    if (sv == "whale") return whale;
+
+    return {};
+}
+
+int main()
+{
+    std::cout << "Enter a pet: cat, dog, pig, or whale: ";
+    std::string s{};
+    std::cin >> s;
+
+    std::optional<Pet> pet { getPetFromString(s) };
+
+    if (!pet)
+        std::cout << "You entered an invalid pet\n";
+    else
+        std::cout << "You entered: " << getPetName(*pet) << '\n';
+
+    return 0;
+}
+```
+
+### 13.5 — Introduction to overloading the I/O operators
+* See this section for more examples.
+* Overloading the `<<` operator to print an enumerator:
+```
+#include <iostream>
+#include <string_view>
+
+enum Color
+{
+	black,
+	red,
+	blue,
+};
+
+constexpr std::string_view getColorName(Color color)
+{
+    switch (color)
+    {
+    case black: return "black";
+    case red:   return "red";
+    case blue:  return "blue";
+    default:    return "???";
+    }
+}
+
+// Teach operator<< how to print a Color
+// std::ostream is the type of std::cout, std::cerr, etc...
+// The return type and parameter type are references (to prevent copies from being made)
+std::ostream& operator<<(std::ostream& out, Color color)
+{
+    out << getColorName(color); // print our color's name to whatever output stream out
+    return out;                 // operator<< conventionally returns its left operand
+
+    // The above can be condensed to the following single line:
+    // return out << getColorName(color)
+}
+
+int main()
+{
+	Color shirt{ blue };
+	std::cout << "Your shirt is " << shirt << '\n'; // it works!
+
+	return 0;
+}
+```
+* Overloading the `>>` operator to input an enumerator:
+```
+#include <iostream>
+#include <limits>
+#include <optional>
+#include <string>
+#include <string_view>
+
+enum Pet
+{
+    cat,   // 0
+    dog,   // 1
+    pig,   // 2
+    whale, // 3
+};
+
+constexpr std::string_view getPetName(Pet pet)
+{
+    switch (pet)
+    {
+    case cat:   return "cat";
+    case dog:   return "dog";
+    case pig:   return "pig";
+    case whale: return "whale";
+    default:    return "???";
+    }
+}
+
+constexpr std::optional<Pet> getPetFromString(std::string_view sv)
+{
+    if (sv == "cat")   return cat;
+    if (sv == "dog")   return dog;
+    if (sv == "pig")   return pig;
+    if (sv == "whale") return whale;
+
+    return {};
+}
+
+// pet is an in/out parameter
+std::istream& operator>>(std::istream& in, Pet& pet)
+{
+    std::string s{};
+    in >> s; // get input string from user
+
+    std::optional<Pet> match { getPetFromString(s) };
+    if (match) // if we found a match
+    {
+        pet = *match; // dereference std::optional to get matching enumerator
+        return in;
+    }
+
+    // We didn't find a match, so input must have been invalid
+    // so we will set input stream to fail state
+    in.setstate(std::ios_base::failbit);
+
+    // On an extraction failure, operator>> zero-initializes fundamental types
+    // Uncomment the following line to make this operator do the same thing
+    // pet = {};
+
+    return in;
+}
+
+int main()
+{
+    std::cout << "Enter a pet: cat, dog, pig, or whale: ";
+    Pet pet{};
+    std::cin >> pet;
+
+    if (std::cin) // if we found a match
+        std::cout << "You chose: " << getPetName(pet) << '\n';
+    else
+    {
+        std::cin.clear(); // reset the input stream to good
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Your pet was not valid\n";
+    }
+
+    return 0;
+}
+```
+
+### 13.6 — Scoped enumerations (enum classes)
+* _Unscoped_ enumerations are not type safe. For example:
+```
+#include <iostream>
+
+int main()
+{
+    enum Color
+    {
+        red,
+        blue,
+    };
+
+    enum Fruit
+    {
+        banana,
+        apple,
+    };
+
+    Color color { red };
+    Fruit fruit { banana };
+
+    if (color == fruit) // The compiler will compare color and fruit as integers
+        std::cout << "color and fruit are equal\n"; // and find they are equal!
+    else
+        std::cout << "color and fruit are not equal\n";
+
+    return 0;
+}
+```
+* _Scoped enumerations_, also called _scoped enums_ or _enum classes_, differ from _unscoped enumerations_ in that their enumerators don't implicitly convert to integers and that their scope is inside the enumeration instead of where the enumeration was defined. For example:
+```
+#include <iostream>
+int main()
+{
+    enum class Color // "enum class" defines this as a scoped enumeration rather than an unscoped enumeration
+    {
+        red, // red is considered part of Color's scope region
+        blue,
+    };
+
+    enum class Fruit
+    {
+        banana, // banana is considered part of Fruit's scope region
+        apple,
+    };
+
+    Color color { Color::red }; // note: red is not directly accessible, we have to use Color::red
+    Fruit fruit { Fruit::banana }; // note: banana is not directly accessible, we have to use Fruit::banana
+
+    if (color == fruit) // compile error: the compiler doesn't know how to compare different types Color and Fruit
+        std::cout << "color and fruit are equal\n";
+    else
+        std::cout << "color and fruit are not equal\n";
+
+    return 0;
+}
+```
+* The `class` keyword (along with the `static` keyword), is one of the most overloaded keywords in the C++ language, and can have different meanings depending on context. Although scoped enumerations use the `class` keyword, they aren’t considered to be a “class type” (which is reserved for structs, classes, and unions).
+* `enum struct` also works in this context, and behaves identically to `enum class`. However, use of `enum struct` is non-idiomatic, so avoid its use.
+* Since scoped enums don't implicitly convert to integers, `static_cast` or `std::to_underlying` (C++23) need to be used. For example:
+```
+#include <iostream>
+#include <utility> // for std::to_underlying() (C++23)
+
+int main()
+{
+    enum class Color
+    {
+        red,
+        blue,
+    };
+
+    Color color { Color::blue };
+
+    std::cout << color << '\n'; // won't work, because there's no implicit conversion to int
+    std::cout << static_cast<int>(color) << '\n';   // explicit conversion to int, will print 1
+    std::cout << std::to_underlying(color) << '\n'; // convert to underlying type, will print 1 (C++23)
+
+    return 0;
+}
+```
+* Favor scoped enumerations over unscoped enumerations unless there’s a compelling reason to do otherwise.
+* (C++20) Can use `using enum` to import all the enumerators from an enumeration into the current scope so the scope operator doesn't need to be used. For example:
+```
+#include <iostream>
+#include <string_view>
+
+enum class Color
+{
+    black,
+    red,
+    blue,
+};
+
+constexpr std::string_view getColor(Color color)
+{
+    using enum Color; // bring all Color enumerators into current scope (C++20)
+    // We can now access the enumerators of Color without using a Color:: prefix
+
+    switch (color)
+    {
+    case black: return "black"; // note: black instead of Color::black
+    case red:   return "red";
+    case blue:  return "blue";
+    default:    return "???";
+    }
+}
+
+int main()
+{
+    Color shirt{ Color::blue };
+
+    std::cout << "Your shirt is " << getColor(shirt) << '\n';
+
+    return 0;
+}
+```
+
+### 13.7 — Introduction to structs, members, and member selection
+
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
 * Procedural programming has properties (data) and behaviors (functions) separated.
