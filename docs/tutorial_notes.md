@@ -2901,7 +2901,7 @@ or
     
     int main()
     {
-        Point3d zero1;        // C++ way. struct keyword is mandatory
+        Point3d zero1;        // C++ way. struct keyword is not mandatory
         struct Point3d zero2; // C way.   struct keyword is mandatory
     }
 ```
