@@ -2117,38 +2117,38 @@ int main()
 ### 13.3 — Unscoped enumerator integral conversions
 * Enumerators are usually assigned an integer value from 0 to n, but values can be explicitly assigned, including negative integers. For example,
 ```
-enum Animal
-{
-    cat = -3,    // values can be negative
-    dog,         // -2
-    pig,         // -1
-    horse = 5,
-    giraffe = 5, // shares same value as horse
-    chicken,     // 6
-};
+    enum Animal
+    {
+        cat = -3,    // values can be negative
+        dog,         // -2
+        pig,         // -1
+        horse = 5,
+        giraffe = 5, // shares same value as horse
+        chicken,     // 6
+    };
 ```
 * Enumerators can have the same value, meaning they are interchangeable, though this should be avoided.
 * Enumerations, if not explicitly initialized, are initialized to a default value of 0, even if 0 is not an enumerator. Therefore, make 0 the best default for the enumeration. If no good default exists, consider using an “invalid” or “unknown” enumerator for 0, so that the state is explicitly documented and can be explicitly handled where appropriate.
 * C++ does not specify the _underlying type_ or _base_ of an enumeration type. This is up to the compiler. The underlying type can, however, be explicitly set. For example,
 ```
-#include <cstdint>  // for std::int8_t
-#include <iostream>
-
-// Use an 8-bit integer as the enum underlying type
-enum Color : std::int8_t
-{
-    black,
-    red,
-    blue,
-};
-
-int main()
-{
-    Color c{ black };
-    std::cout << sizeof(c) << '\n'; // prints 1 (byte)
-
-    return 0;
-}
+    #include <cstdint>  // for std::int8_t
+    #include <iostream>
+    
+    // Use an 8-bit integer as the enum underlying type
+    enum Color : std::int8_t
+    {
+        black,
+        red,
+        blue,
+    };
+    
+    int main()
+    {
+        Color c{ black };
+        std::cout << sizeof(c) << '\n'; // prints 1 (byte)
+    
+        return 0;
+    }
 ```
 * Specify the base type of an enumeration only when necessary.
 * Warning: since `std::int8_t` and `std::uint8_t` are usually type aliases for `char` types, using either of these types as the enum base will most likely cause the enumerators to print as `char` values rather than `int` values.
@@ -2157,381 +2157,756 @@ int main()
 ### 13.4 — Converting an enumeration to and from a string
 * Can use a function that uses a switch statement using the enumerators. For example:
 ```
-#include <iostream>
-#include <string_view>
-
-enum Color
-{
-    black,
-    red,
-    blue,
-};
-
-constexpr std::string_view getColorName(Color color)
-{
-    switch (color)
+    #include <iostream>
+    #include <string_view>
+    
+    enum Color
     {
-    case black: return "black";
-    case red:   return "red";
-    case blue:  return "blue";
-    default:    return "???";
+        black,
+        red,
+        blue,
+    };
+    
+    constexpr std::string_view getColorName(Color color)
+    {
+        switch (color)
+        {
+        case black: return "black";
+        case red:   return "red";
+        case blue:  return "blue";
+        default:    return "???";
+        }
     }
-}
-
-int main()
-{
-    constexpr Color shirt{ blue };
-
-    std::cout << "Your shirt is " << getColorName(shirt) << '\n';
-
-    return 0;
-}
+    
+    int main()
+    {
+        constexpr Color shirt{ blue };
+    
+        std::cout << "Your shirt is " << getColorName(shirt) << '\n';
+    
+        return 0;
+    }
 ```
 * One way an enumerated variable can be set from user input is by having the user input a corresponding enumerator integer and casting it. For example,
 ```
-#include <iostream>
-#include <string_view>
-
-enum Pet
-{
-    cat,   // 0
-    dog,   // 1
-    pig,   // 2
-    whale, // 3
-};
-
-constexpr std::string_view getPetName(Pet pet)
-{
-    switch (pet)
+    #include <iostream>
+    #include <string_view>
+    
+    enum Pet
     {
-    case cat:   return "cat";
-    case dog:   return "dog";
-    case pig:   return "pig";
-    case whale: return "whale";
-    default:    return "???";
-    }
-}
-
-int main()
-{
-    std::cout << "Enter a pet (0=cat, 1=dog, 2=pig, 3=whale): ";
-
-    int input{};
-    std::cin >> input; // input an integer
-
-    if (input < 0 || input > 3)
-        std::cout << "You entered an invalid pet\n";
-    else
+        cat,   // 0
+        dog,   // 1
+        pig,   // 2
+        whale, // 3
+    };
+    
+    constexpr std::string_view getPetName(Pet pet)
     {
-        Pet pet{ static_cast<Pet>(input) }; // static_cast our integer to a Pet
-        std::cout << "You entered: " << getPetName(pet) << '\n';
+        switch (pet)
+        {
+        case cat:   return "cat";
+        case dog:   return "dog";
+        case pig:   return "pig";
+        case whale: return "whale";
+        default:    return "???";
+        }
     }
-
-    return 0;
-}
+    
+    int main()
+    {
+        std::cout << "Enter a pet (0=cat, 1=dog, 2=pig, 3=whale): ";
+    
+        int input{};
+        std::cin >> input; // input an integer
+    
+        if (input < 0 || input > 3)
+            std::cout << "You entered an invalid pet\n";
+        else
+        {
+            Pet pet{ static_cast<Pet>(input) }; // static_cast our integer to a Pet
+            std::cout << "You entered: " << getPetName(pet) << '\n';
+        }
+    
+        return 0;
+    }
 ```
 * Another way to set an enumerated variable with user input is by comparing string input from the user. For example:
 ```
-#include <iostream>
-#include <optional> // for std::optional
-#include <string>
-#include <string_view>
-
-enum Pet
-{
-    cat,   // 0
-    dog,   // 1
-    pig,   // 2
-    whale, // 3
-};
-
-constexpr std::string_view getPetName(Pet pet)
-{
-    switch (pet)
+    #include <iostream>
+    #include <optional> // for std::optional
+    #include <string>
+    #include <string_view>
+    
+    enum Pet
     {
-    case cat:   return "cat";
-    case dog:   return "dog";
-    case pig:   return "pig";
-    case whale: return "whale";
-    default:    return "???";
+        cat,   // 0
+        dog,   // 1
+        pig,   // 2
+        whale, // 3
+    };
+    
+    constexpr std::string_view getPetName(Pet pet)
+    {
+        switch (pet)
+        {
+        case cat:   return "cat";
+        case dog:   return "dog";
+        case pig:   return "pig";
+        case whale: return "whale";
+        default:    return "???";
+        }
     }
-}
-
-constexpr std::optional<Pet> getPetFromString(std::string_view sv)
-{
-    // We can only switch on an integral value (or enum), not a string
-    // so we have to use if-statements here
-    if (sv == "cat")   return cat;
-    if (sv == "dog")   return dog;
-    if (sv == "pig")   return pig;
-    if (sv == "whale") return whale;
-
-    return {};
-}
-
-int main()
-{
-    std::cout << "Enter a pet: cat, dog, pig, or whale: ";
-    std::string s{};
-    std::cin >> s;
-
-    std::optional<Pet> pet { getPetFromString(s) };
-
-    if (!pet)
-        std::cout << "You entered an invalid pet\n";
-    else
-        std::cout << "You entered: " << getPetName(*pet) << '\n';
-
-    return 0;
-}
+    
+    constexpr std::optional<Pet> getPetFromString(std::string_view sv)
+    {
+        // We can only switch on an integral value (or enum), not a string
+        // so we have to use if-statements here
+        if (sv == "cat")   return cat;
+        if (sv == "dog")   return dog;
+        if (sv == "pig")   return pig;
+        if (sv == "whale") return whale;
+    
+        return {};
+    }
+    
+    int main()
+    {
+        std::cout << "Enter a pet: cat, dog, pig, or whale: ";
+        std::string s{};
+        std::cin >> s;
+    
+        std::optional<Pet> pet { getPetFromString(s) };
+    
+        if (!pet)
+            std::cout << "You entered an invalid pet\n";
+        else
+            std::cout << "You entered: " << getPetName(*pet) << '\n';
+    
+        return 0;
+    }
 ```
 
 ### 13.5 — Introduction to overloading the I/O operators
 * See this section for more examples.
 * Overloading the `<<` operator to print an enumerator:
 ```
-#include <iostream>
-#include <string_view>
-
-enum Color
-{
-	black,
-	red,
-	blue,
-};
-
-constexpr std::string_view getColorName(Color color)
-{
-    switch (color)
+    #include <iostream>
+    #include <string_view>
+    
+    enum Color
     {
-    case black: return "black";
-    case red:   return "red";
-    case blue:  return "blue";
-    default:    return "???";
+    	black,
+    	red,
+    	blue,
+    };
+    
+    constexpr std::string_view getColorName(Color color)
+    {
+        switch (color)
+        {
+        case black: return "black";
+        case red:   return "red";
+        case blue:  return "blue";
+        default:    return "???";
+        }
     }
-}
-
-// Teach operator<< how to print a Color
-// std::ostream is the type of std::cout, std::cerr, etc...
-// The return type and parameter type are references (to prevent copies from being made)
-std::ostream& operator<<(std::ostream& out, Color color)
-{
-    out << getColorName(color); // print our color's name to whatever output stream out
-    return out;                 // operator<< conventionally returns its left operand
-
-    // The above can be condensed to the following single line:
-    // return out << getColorName(color)
-}
-
-int main()
-{
-	Color shirt{ blue };
-	std::cout << "Your shirt is " << shirt << '\n'; // it works!
-
-	return 0;
-}
+    
+    // Teach operator<< how to print a Color
+    // std::ostream is the type of std::cout, std::cerr, etc...
+    // The return type and parameter type are references (to prevent copies from being made)
+    std::ostream& operator<<(std::ostream& out, Color color)
+    {
+        out << getColorName(color); // print our color's name to whatever output stream out
+        return out;                 // operator<< conventionally returns its left operand
+    
+        // The above can be condensed to the following single line:
+        // return out << getColorName(color)
+    }
+    
+    int main()
+    {
+    	Color shirt{ blue };
+    	std::cout << "Your shirt is " << shirt << '\n'; // it works!
+    
+    	return 0;
+    }
 ```
 * Overloading the `>>` operator to input an enumerator:
 ```
-#include <iostream>
-#include <limits>
-#include <optional>
-#include <string>
-#include <string_view>
-
-enum Pet
-{
-    cat,   // 0
-    dog,   // 1
-    pig,   // 2
-    whale, // 3
-};
-
-constexpr std::string_view getPetName(Pet pet)
-{
-    switch (pet)
+    #include <iostream>
+    #include <limits>
+    #include <optional>
+    #include <string>
+    #include <string_view>
+    
+    enum Pet
     {
-    case cat:   return "cat";
-    case dog:   return "dog";
-    case pig:   return "pig";
-    case whale: return "whale";
-    default:    return "???";
+        cat,   // 0
+        dog,   // 1
+        pig,   // 2
+        whale, // 3
+    };
+    
+    constexpr std::string_view getPetName(Pet pet)
+    {
+        switch (pet)
+        {
+        case cat:   return "cat";
+        case dog:   return "dog";
+        case pig:   return "pig";
+        case whale: return "whale";
+        default:    return "???";
+        }
     }
-}
-
-constexpr std::optional<Pet> getPetFromString(std::string_view sv)
-{
-    if (sv == "cat")   return cat;
-    if (sv == "dog")   return dog;
-    if (sv == "pig")   return pig;
-    if (sv == "whale") return whale;
-
-    return {};
-}
-
-// pet is an in/out parameter
-std::istream& operator>>(std::istream& in, Pet& pet)
-{
-    std::string s{};
-    in >> s; // get input string from user
-
-    std::optional<Pet> match { getPetFromString(s) };
-    if (match) // if we found a match
+    
+    constexpr std::optional<Pet> getPetFromString(std::string_view sv)
     {
-        pet = *match; // dereference std::optional to get matching enumerator
+        if (sv == "cat")   return cat;
+        if (sv == "dog")   return dog;
+        if (sv == "pig")   return pig;
+        if (sv == "whale") return whale;
+    
+        return {};
+    }
+    
+    // pet is an in/out parameter
+    std::istream& operator>>(std::istream& in, Pet& pet)
+    {
+        std::string s{};
+        in >> s; // get input string from user
+    
+        std::optional<Pet> match { getPetFromString(s) };
+        if (match) // if we found a match
+        {
+            pet = *match; // dereference std::optional to get matching enumerator
+            return in;
+        }
+    
+        // We didn't find a match, so input must have been invalid
+        // so we will set input stream to fail state
+        in.setstate(std::ios_base::failbit);
+    
+        // On an extraction failure, operator>> zero-initializes fundamental types
+        // Uncomment the following line to make this operator do the same thing
+        // pet = {};
+    
         return in;
     }
-
-    // We didn't find a match, so input must have been invalid
-    // so we will set input stream to fail state
-    in.setstate(std::ios_base::failbit);
-
-    // On an extraction failure, operator>> zero-initializes fundamental types
-    // Uncomment the following line to make this operator do the same thing
-    // pet = {};
-
-    return in;
-}
-
-int main()
-{
-    std::cout << "Enter a pet: cat, dog, pig, or whale: ";
-    Pet pet{};
-    std::cin >> pet;
-
-    if (std::cin) // if we found a match
-        std::cout << "You chose: " << getPetName(pet) << '\n';
-    else
+    
+    int main()
     {
-        std::cin.clear(); // reset the input stream to good
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Your pet was not valid\n";
+        std::cout << "Enter a pet: cat, dog, pig, or whale: ";
+        Pet pet{};
+        std::cin >> pet;
+    
+        if (std::cin) // if we found a match
+            std::cout << "You chose: " << getPetName(pet) << '\n';
+        else
+        {
+            std::cin.clear(); // reset the input stream to good
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Your pet was not valid\n";
+        }
+    
+        return 0;
     }
-
-    return 0;
-}
 ```
 
 ### 13.6 — Scoped enumerations (enum classes)
 * _Unscoped_ enumerations are not type safe. For example:
 ```
-#include <iostream>
-
-int main()
-{
-    enum Color
+    #include <iostream>
+    
+    int main()
     {
-        red,
-        blue,
-    };
-
-    enum Fruit
-    {
-        banana,
-        apple,
-    };
-
-    Color color { red };
-    Fruit fruit { banana };
-
-    if (color == fruit) // The compiler will compare color and fruit as integers
-        std::cout << "color and fruit are equal\n"; // and find they are equal!
-    else
-        std::cout << "color and fruit are not equal\n";
-
-    return 0;
-}
+        enum Color
+        {
+            red,
+            blue,
+        };
+    
+        enum Fruit
+        {
+            banana,
+            apple,
+        };
+    
+        Color color { red };
+        Fruit fruit { banana };
+    
+        if (color == fruit) // The compiler will compare color and fruit as integers
+            std::cout << "color and fruit are equal\n"; // and find they are equal!
+        else
+            std::cout << "color and fruit are not equal\n";
+    
+        return 0;
+    }
 ```
 * _Scoped enumerations_, also called _scoped enums_ or _enum classes_, differ from _unscoped enumerations_ in that their enumerators don't implicitly convert to integers and that their scope is inside the enumeration instead of where the enumeration was defined. For example:
 ```
-#include <iostream>
-int main()
-{
-    enum class Color // "enum class" defines this as a scoped enumeration rather than an unscoped enumeration
+    #include <iostream>
+    int main()
     {
-        red, // red is considered part of Color's scope region
-        blue,
-    };
-
-    enum class Fruit
-    {
-        banana, // banana is considered part of Fruit's scope region
-        apple,
-    };
-
-    Color color { Color::red }; // note: red is not directly accessible, we have to use Color::red
-    Fruit fruit { Fruit::banana }; // note: banana is not directly accessible, we have to use Fruit::banana
-
-    if (color == fruit) // compile error: the compiler doesn't know how to compare different types Color and Fruit
-        std::cout << "color and fruit are equal\n";
-    else
-        std::cout << "color and fruit are not equal\n";
-
-    return 0;
-}
+        enum class Color // "enum class" defines this as a scoped enumeration rather than an unscoped enumeration
+        {
+            red, // red is considered part of Color's scope region
+            blue,
+        };
+    
+        enum class Fruit
+        {
+            banana, // banana is considered part of Fruit's scope region
+            apple,
+        };
+    
+        Color color { Color::red }; // note: red is not directly accessible, we have to use Color::red
+        Fruit fruit { Fruit::banana }; // note: banana is not directly accessible, we have to use Fruit::banana
+    
+        if (color == fruit) // compile error: the compiler doesn't know how to compare different types Color and Fruit
+            std::cout << "color and fruit are equal\n";
+        else
+            std::cout << "color and fruit are not equal\n";
+    
+        return 0;
+    }
 ```
 * The `class` keyword (along with the `static` keyword), is one of the most overloaded keywords in the C++ language, and can have different meanings depending on context. Although scoped enumerations use the `class` keyword, they aren’t considered to be a “class type” (which is reserved for structs, classes, and unions).
 * `enum struct` also works in this context, and behaves identically to `enum class`. However, use of `enum struct` is non-idiomatic, so avoid its use.
 * Since scoped enums don't implicitly convert to integers, `static_cast` or `std::to_underlying` (C++23) need to be used. For example:
 ```
-#include <iostream>
-#include <utility> // for std::to_underlying() (C++23)
-
-int main()
-{
-    enum class Color
+    #include <iostream>
+    #include <utility> // for std::to_underlying() (C++23)
+    
+    int main()
     {
-        red,
-        blue,
-    };
-
-    Color color { Color::blue };
-
-    std::cout << color << '\n'; // won't work, because there's no implicit conversion to int
-    std::cout << static_cast<int>(color) << '\n';   // explicit conversion to int, will print 1
-    std::cout << std::to_underlying(color) << '\n'; // convert to underlying type, will print 1 (C++23)
-
-    return 0;
-}
+        enum class Color
+        {
+            red,
+            blue,
+        };
+    
+        Color color { Color::blue };
+    
+        std::cout << color << '\n'; // won't work, because there's no implicit conversion to int
+        std::cout << static_cast<int>(color) << '\n';   // explicit conversion to int, will print 1
+        std::cout << std::to_underlying(color) << '\n'; // convert to underlying type, will print 1 (C++23)
+    
+        return 0;
+    }
 ```
 * Favor scoped enumerations over unscoped enumerations unless there’s a compelling reason to do otherwise.
 * (C++20) Can use `using enum` to import all the enumerators from an enumeration into the current scope so the scope operator doesn't need to be used. For example:
 ```
-#include <iostream>
-#include <string_view>
-
-enum class Color
-{
-    black,
-    red,
-    blue,
-};
-
-constexpr std::string_view getColor(Color color)
-{
-    using enum Color; // bring all Color enumerators into current scope (C++20)
-    // We can now access the enumerators of Color without using a Color:: prefix
-
-    switch (color)
+    #include <iostream>
+    #include <string_view>
+    
+    enum class Color
     {
-    case black: return "black"; // note: black instead of Color::black
-    case red:   return "red";
-    case blue:  return "blue";
-    default:    return "???";
+        black,
+        red,
+        blue,
+    };
+    
+    constexpr std::string_view getColor(Color color)
+    {
+        using enum Color; // bring all Color enumerators into current scope (C++20)
+        // We can now access the enumerators of Color without using a Color:: prefix
+    
+        switch (color)
+        {
+        case black: return "black"; // note: black instead of Color::black
+        case red:   return "red";
+        case blue:  return "blue";
+        default:    return "???";
+        }
     }
-}
-
-int main()
-{
-    Color shirt{ Color::blue };
-
-    std::cout << "Your shirt is " << getColor(shirt) << '\n';
-
-    return 0;
-}
+    
+    int main()
+    {
+        Color shirt{ Color::blue };
+    
+        std::cout << "Your shirt is " << getColor(shirt) << '\n';
+    
+        return 0;
+    }
 ```
 
 ### 13.7 — Introduction to structs, members, and member selection
+* A struct is a class type (as are classes and unions). As such, anything that applies to class types applies to structs.
+* A member is a variable, function, or type that belongs to a struct (or class). All members must be declared within the struct (or class) definition.
+* To access a specific member variable, use the member selection operator (`operator.`)
+
+### 13.8 — Struct aggregate initialization
+* An aggregate in C++ is either a C-style array, or a class type (struct, class, or union) that has:
+    - No user-declared constructors
+    - No private or protected non-static data members
+    - No virtual functions
+* To initialize a struct, which is an aggregate, can use _copy-list initialization_ or _list initialization_. _List initialization_ is the preffered way. For example,
+```
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    int main()
+    {
+        Employee frank = { 1, 32, 60000.0 }; // copy-list initialization using braced list
+        Employee joe { 2, 28, 45000.0 };     // list initialization using braced list (preferred)
+    
+        return 0;
+    }
+```
+* Some aggregate forms can use direct initialization (as of C++20) but this is not preferred. For example,
+```
+    Employee robert ( 3, 45, 62500.0 );  // direct initialization using parenthesized list (C++20)
+```
+* If the number of initialization values if less than the number of struct member, then the following occurs:
+    - If member has default value, that is used.
+    - Otherwise, member is copy-initialized from an empty initializer list. In most cases, this performs value-initialization on those members (on class types, this invokes default constructor even if list constructor exists).
+    - Example:
+```
+struct Employee
+    {
+        int id {};
+        int age {};
+        double wage { 76000.0 };
+        double whatever;
+    };
+    
+    int main()
+    {
+        Employee joe { 2, 28 }; // joe.whatever will be value-initialized to 0.0
+    
+        return 0;
+    }
+```
+* In above example, `joe.id` is set to `2`, `joe.age` is set to `28`, `joe.wage` is set to `76000.0`, and `joe.whatever` is set to `0`.
+* Can overload `<<` to print struct more easily. For example,
+```
+    #include <iostream>
+    
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    std::ostream& operator<<(std::ostream& out, const Employee& e)
+    {
+        out << "id: " << e.id << " age: " << e.age << " wage: " << e.wage;
+        return out;
+    }
+    
+    int main()
+    {
+        Employee joe { 2, 28 }; // joe.wage will be value-initialized to 0.0
+        std::cout << joe << '\n';
+    
+        return 0;
+    }
+```
+* Structs can be const or constexpr, e.g.
+```
+    struct Rectangle
+    {
+        double length {};
+        double width {};
+    };
+    
+    int main()
+    {
+        const Rectangle unit { 1.0, 1.0 };
+        const Rectangle zero { }; // value-initialize all members
+    
+        return 0;
+    }
+```
+* _Designated initializers_ can be used (C++20) to explicitly define which members to initialize. This can be helpful if a member is added to a struct later so that the old member initializations aren't shifted. For example,
+```
+    struct Foo
+    {
+        int a{ };
+        int b{ };
+        int c{ };
+    };
+    
+    int main()
+    {
+        Foo f1{ .a{ 1 }, .c{ 3 } }; // ok: f1.a = 1, f1.b = 0 (value initialized), f1.c = 3
+        Foo f2{ .a = 1, .c = 3 };   // ok: f2.a = 1, f2.b = 0 (value initialized), f2.c = 3
+        Foo f3{ .b{ 2 }, .a{ 1 } }; // error: initialization order does not match order of declaration in struct
+    
+        return 0;
+    }
+```
+* However, this makes struct initialization more cluttered, so avoid this method. Add new struct members to bottom of struct to avoid member initialization shifting.
+* Can assign all member values to a struct in one statement using an initialization list. For example,
+```
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    int main()
+    {
+        Employee joe { 1, 32, 60000.0 };
+        joe = { joe.id, 33, 66000.0 }; // Joe had a birthday and got a raise
+    
+        return 0;
+    }
+```
+* Note in the above example, though, that `joe.id` had to be re-used to maintain its value.
+* Designated initializers (C++20) can also be used to assign all struct members values. For example,
+```
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    int main()
+    {
+        Employee joe { 1, 32, 60000.0 };
+        joe = { .id = joe.id, .age = 33, .wage = 66000.0 }; // Joe had a birthday and got a raise
+    
+        return 0;
+    }
+```
+* In above example, if `.id` wasn't specified, `joe.id` would have been assigned default value of 0.
+* A struct can be assigned the value of another struct. This can be done with copy, direct, or direct-list-initialization methods. For example,
+```
+    #include <iostream>
+    
+    struct Foo
+    {
+        int a{};
+        int b{};
+        int c{};
+    };
+    
+    std::ostream& operator<<(std::ostream& out, const Foo& f)
+    {
+        out << f.a << ' ' << f.b << ' ' << f.c;
+        return out;
+    }
+    
+    int main()
+    {
+        Foo foo { 1, 2, 3 };
+    
+        Foo x = foo; // copy-initialization
+        Foo y(foo);  // direct-initialization
+        Foo z {foo}; // direct-list-initialization
+    
+        std::cout << x << '\n';
+        std::cout << y << '\n';
+        std::cout << z << '\n';
+    
+        return 0;
+    }
+```
+
+### 13.9 — Default member initialization
+* For initial values in a struct definition, the following will occur to the members when the struct is instantiated but not initialized.
+    - if member has no initialization, e.g. `int x;`, value is garbage.
+    - if member has value-initialization, e.g. `int y {};`, value is 0. Recall that brace initialization with no value, e.g. empty braces, results in _value-initialization_ which  results in 0 for types like `int` or `0.0f` for floats, etc.
+    - if member has explicit default value, e.g. `int z {2};`, value has default value (here `2`).
+* Explicit initialization values take precedence over default values, e.g.
+```
+    struct Something
+    {
+        int x;       // no default initialization value (bad)
+        int y {};    // value-initialized by default
+        int z { 2 }; // explicit default value
+    };
+    
+    int main()
+    {
+        Something s2 { 5, 6, 7 }; // use explicit initializers for s2.x, s2.y, and s2.z (no default values are used)
+    
+        return 0;
+    }
+```
+* In the example above, struct members x, y, and z are 5, 6, and 7, instead of garbage, 0, and 2.
+* If struct (or any aggregate variable) is list initialized with fewer entries than members, the remaining members are _value-initialized_. For example,
+```
+    struct Something
+    {
+        int x;       // no default initialization value (bad)
+        int y {};    // value-initialized by default
+        int z { 2 }; // explicit default value
+    };
+    
+    int main()
+    {
+        Something s2 { 5, 6, 7 }; // use explicit initializers for s2.x, s2.y, and s2.z (no default values are used)
+    
+        return 0;
+    }
+```
+* In the above example, since the initialization list is empty, a default initial value will be used if provided; else value-initialization will occur. `x` has no default value, so it is value-initialized to `0`. `y` is value-initialized to `0`. `z` is initialized to its provided default value of `2`.
+* Struct member initialization summary:
+```
+    struct Something
+    {
+        int x;       // no default initialization value (bad)
+        int y {};    // value-initialized by default
+        int z { 2 }; // explicit default value
+    };
+    
+    int main()
+    {
+        Something s1;             // No initializer list: s1.x is uninitialized, s1.y and s1.z use defaults
+        Something s2 { 5, 6, 7 }; // Explicit initializers: s2.x, s2.y, and s2.z use explicit values (no default values are used)
+        Something s3 {};          // Missing initializers: s3.x is value initialized, s3.y and s3.z use defaults
+    
+        return 0;
+    }
+```
+* In the above example summary, take care to avoid cases like `s1.x`, where a value has no initial value whatsoever, resulting in a garbage value if used. Prefer to use explicit value initialization (e.g. `int x{0};` or `float y{0.0f};`) over value-initialization (e.g. `int x{};` or `float y{};`).
+* For aggregates (e.g. structs and objects), prefer value initialization (with an empty braces initializer) over default initialization (with no braces). For example,
+```
+Fraction f1;
+Fraction f2 {};       // prefer
+```
+
+### 13.10 — Passing and returning structs
+* Passing struct by reference:
+```
+    #include <iostream>
+    
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    void printEmployee(const Employee& employee) // note pass by reference here
+    {
+        std::cout << "ID:   " << employee.id << '\n';
+        std::cout << "Age:  " << employee.age << '\n';
+        std::cout << "Wage: " << employee.wage << '\n';
+    }
+    
+    int main()
+    {
+        Employee joe { 14, 32, 24.15 };
+        Employee frank { 15, 28, 18.27 };
+    
+        // Print Joe's information
+        printEmployee(joe);
+    
+        std::cout << '\n';
+    
+        // Print Frank's information
+        printEmployee(frank);
+    
+        return 0;
+    }
+```
+* Passing temporary struct example:
+```
+    #include <iostream>
+    
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    void printEmployee(const Employee& employee) // note pass by reference here
+    {
+        std::cout << "ID:   " << employee.id << '\n';
+        std::cout << "Age:  " << employee.age << '\n';
+        std::cout << "Wage: " << employee.wage << '\n';
+    }
+    
+    int main()
+    {
+        // Print Joe's information
+        printEmployee(Employee { 14, 32, 24.15 }); // construct a temporary Employee to pass to function (type explicitly specified) (preferred)
+    
+        std::cout << '\n';
+    
+        // Print Frank's information
+        printEmployee({ 15, 28, 18.27 }); // construct a temporary Employee to pass to function (type deduced from parameter)
+    
+        return 0;
+    }
+```
+* Returning struct example:
+```
+    #include <iostream>
+    
+    struct Point3d
+    {
+        double x { 0.0 };
+        double y { 0.0 };
+        double z { 0.0 };
+    };
+    
+    Point3d getZeroPoint()
+    {
+        // return an unnamed Point3d
+        return Point3d { 0.0, 0.0, 0.0 }; 
+    }
+    
+    int main()
+    {
+        Point3d zero{ getZeroPoint() };
+    
+        if (zero.x == 0.0 && zero.y == 0.0 && zero.z == 0.0)
+            std::cout << "The point is zero\n";
+        else
+            std::cout << "The point is not zero\n";
+    
+        return 0;
+    }
+```
+* In above example's `getZeroPoint()` function, can replace return statement with
+```
+    Point3d getZeroPoint()
+    {
+        // We already specified the type at the function declaration
+        // so we don't need to do so here again
+        return { 0.0, 0.0, 0.0 }; // return an unnamed Point3d
+    }
+```
+or
+```
+    Point3d getZeroPoint()
+    {
+        // We can use empty curly braces to value-initialize all members
+        return {};
+    }
+```
+* Note that the `struct` keyword isn't necessary (can still be used for compatibility) when instantiating a struct in C++ but is necessary in C. For example
+```
+    #include <iostream>
+    
+    struct Point3d
+    {
+        double x { 0.0 };
+        double y { 0.0 };
+        double z { 0.0 };
+    };
+    
+    int main()
+    {
+        Point3d zero1;        // C++ way. struct keyword is mandatory
+        struct Point3d zero2; // C way.   struct keyword is mandatory
+    }
+```
+
+### 13.11 — Struct miscellany
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
