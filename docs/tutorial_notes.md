@@ -2907,6 +2907,551 @@ or
 ```
 
 ### 13.11 — Struct miscellany
+* A struct can be a member of another struct. Below are two examples.
+* Struct within a struct, example 1: both definitions in the same namespace.
+```
+    #include <iostream>
+    
+    struct Employee
+    {
+        int id {};
+        int age {};
+        double wage {};
+    };
+    
+    struct Company
+    {
+        int numberOfEmployees {};
+        Employee CEO {}; // Employee is a struct within the Company struct
+    };
+    
+    int main()
+    {
+        Company myCompany{ 7, { 1, 32, 55000.0 } }; // Nested initialization list to initialize Employee
+        std::cout << myCompany.CEO.wage << '\n'; // print the CEO's wage
+    
+        return 0;
+    }
+```
+* Struct within a struct, example 2: struct definition inside another struct definition.
+```
+    #include <iostream>
+    
+    struct Company
+    {
+        struct Employee // accessed via Company::Employee
+        {
+            int id{};
+            int age{};
+            double wage{};
+        };
+    
+        int numberOfEmployees{};
+        Employee CEO{}; // Employee is a struct within the Company struct
+    };
+    
+    int main()
+    {
+        Company myCompany{ 7, { 1, 32, 55000.0 } }; // Nested initialization list to initialize Employee
+        std::cout << myCompany.CEO.wage << '\n'; // print the CEO's wage
+    
+        return 0;
+    }
+```
+* Ensure struct members are all owners, and not viewers, so that struct members cannot be dangling references. See example:
+```
+    #include <iostream>
+    #include <string>
+    #include <string_view>
+    
+    struct Owner
+    {
+        std::string name{}; // std::string is an owner
+    };
+    
+    struct Viewer
+    {
+        std::string_view name {}; // std::string_view is a viewer
+    };
+    
+    // getName() returns the user-entered string as a temporary std::string
+    // This temporary std::string will be destroyed at the end of the full expression
+    // containing the function call.
+    std::string getName()
+    {
+        std::cout << "Enter a name: ";
+        std::string name{};
+        std::cin >> name;
+        return name;
+    }
+    
+    int main()
+    {
+        Owner o { getName() };  // The return value of getName() is destroyed just after initialization
+        std::cout << "The owners name is " << o.name << '\n';  // ok
+    
+        Viewer v { getName() }; // The return value of getName() is destroyed just after initialization
+        std::cout << "The viewers name is " << v.name << '\n'; // undefined behavior
+    
+        return 0;
+    }
+```
+* The size of a struct is not always exactly the sum of the bytes of the members due to padding and [byte alignment](https://en.wikipedia.org/wiki/Data_structure_alignment). See example below:
+    - Byte padding can increase space used by each struct instance. Padding can be reduced by defining struct members from larger to smaller.
+```
+    #include <iostream>
+    
+    struct Foo1
+    {
+        short a{}; // will have 2 bytes of padding after a
+        int b{};
+        short c{}; // will have 2 bytes of padding after c
+    };
+    
+    struct Foo2
+    {
+        int b{};
+        short a{};
+        short c{};
+    };
+    
+    int main()
+    {
+        std::cout << sizeof(Foo1) << '\n'; // prints 12
+        std::cout << sizeof(Foo2) << '\n'; // prints 8
+    
+        return 0;
+    }
+```
+
+### 13.12 — Member selection with pointers and references
+* Struct member example using pointer:
+```
+    #include <iostream>
+    
+    struct Employee
+    {
+        int id{};
+        int age{};
+        double wage{};
+    };
+    
+    int main()
+    {
+        Employee joe{ 1, 34, 65000.0 };
+    
+        ++joe.age;
+        joe.wage = 68000.0;
+    
+        Employee* ptr{ &joe };
+        std::cout << ptr->id << '\n'; // Better: use -> to select member from pointer to object
+    
+        return 0;
+    }
+```
+* Dereferencing struct pointers inside a struct pointer (pointer to a pointer):
+```
+    #include <iostream>
+    
+    struct Point
+    {
+        double x {};
+        double y {};
+    };
+    
+    struct Triangle
+    {
+        Point* a {};
+        Point* b {};
+        Point* c {};
+    };
+    
+    int main()
+    {
+        Point a {1,2};
+        Point b {3,7};
+        Point c {10,2};
+    
+        Triangle tr { &a, &b, &c };
+        Triangle* ptr {&tr};
+    
+        // ptr is a pointer to a Triangle, which contains members that are pointers to a Point
+        // To access member y of Point c of the Triangle pointed to by ptr, the following are equivalent:
+    
+        // access via operator.
+        std::cout << (*(*ptr).c).y << '\n'; // ugly!
+    
+        // access via operator->
+        std::cout << ptr -> c -> y << '\n'; // much nicer
+    }
+```
+* `.` operator and `->` can be mixed:
+```
+    #include <iostream>
+    #include <string>
+    
+    struct Paw
+    {
+        int claws{};
+    };
+    
+    struct Animal
+    {
+        std::string name{};
+        Paw paw{};
+    };
+    
+    int main()
+    {
+        Animal puma{ "Puma", { 5 } };
+    
+        Animal* ptr{ &puma };
+    
+        // ptr is a pointer, use ->
+        // paw is not a pointer, use .
+    
+        std::cout << (ptr->paw).claws << '\n'; // Parentheses not required but helpful
+        std::cout << ptr->paw.claws << '\n';
+        return 0;
+    }
+```
+
+### 13.13 — Class templates
+* Class template example for a struct:
+```
+    #include <iostream>
+    
+    template <typename T>
+    struct Pair
+    {
+        T first{};
+        T second{};
+    };
+    
+    int main()
+    {
+        Pair<int> p1{ 5, 6 };        // instantiates Pair<int> and creates object p1
+        std::cout << p1.first << ' ' << p1.second << '\n';
+    
+        Pair<double> p2{ 1.2, 3.4 }; // instantiates Pair<double> and creates object p2
+        std::cout << p2.first << ' ' << p2.second << '\n';
+    
+        Pair<double> p3{ 7.8, 9.0 }; // creates object p3 using prior definition for Pair<double>
+        std::cout << p3.first << ' ' << p3.second << '\n';
+    
+        return 0;
+    }
+```
+* For above example, this is the result after compiler make template instantiations:
+```
+    #include <iostream>
+    
+    // A declaration for our Pair class template
+    // (we don't need the definition any more since it's not used)
+    template <typename T>
+    struct Pair;
+    
+    // Explicitly define what Pair<int> looks like
+    template <> // tells the compiler this is a template type with no template parameters
+    struct Pair<int>
+    {
+        int first{};
+        int second{};
+    };
+    
+    // Explicitly define what Pair<double> looks like
+    template <> // tells the compiler this is a template type with no template parameters
+    struct Pair<double>
+    {
+        double first{};
+        double second{};
+    };
+    
+    int main()
+    {
+        Pair<int> p1{ 5, 6 };        // instantiates Pair<int> and creates object p1
+        std::cout << p1.first << ' ' << p1.second << '\n';
+    
+        Pair<double> p2{ 1.2, 3.4 }; // instantiates Pair<double> and creates object p2
+        std::cout << p2.first << ' ' << p2.second << '\n';
+    
+        Pair<double> p3{ 7.8, 9.0 }; // creates object p3 using prior definition for Pair<double>
+        std::cout << p3.first << ' ' << p3.second << '\n';
+    
+        return 0;
+    }
+```
+* Using the class template above in a function template:
+```
+    #include <iostream>
+    
+    template <typename T>
+    struct Pair
+    {
+        T first{};
+        T second{};
+    };
+    
+    template <typename T>
+    constexpr T max(Pair<T> p)
+    {
+        return (p.first < p.second ? p.second : p.first);
+    }
+    
+    int main()
+    {
+        Pair<int> p1{ 5, 6 };
+        std::cout << max<int>(p1) << " is larger\n"; // explicit call to max<int>
+    
+        Pair<double> p2{ 1.2, 3.4 };
+        std::cout << max(p2) << " is larger\n"; // call to max<double> using template argument deduction (prefer this)
+    
+        return 0;
+    }
+```
+* In example above, when `max()` function is called with `Pair<int>`, the compiler will instantiate the `int max<int>(Pair<int>)' function.
+* In example above, `max<int>(p1)` is an explicit call, whereas `max(p2)` is an implicit template call, using _template argument deduction_ for determining the template type.
+* Class templates can have multiple template types, e.g.
+```
+    #include <iostream>
+    
+    template <typename T, typename U>
+    struct Pair
+    {
+        T first{};
+        U second{};
+    };
+    
+    template <typename T, typename U>
+    void print(Pair<T, U> p)
+    {
+        std::cout << '[' << p.first << ", " << p.second << ']';
+    }
+    
+    int main()
+    {
+        Pair<int, double> p1{ 1, 2.3 }; // a pair holding an int and a double
+        Pair<double, int> p2{ 4.5, 6 }; // a pair holding a double and an int
+        Pair<int, int> p3{ 7, 8 };      // a pair holding two ints
+    
+        print(p2);
+    
+        return 0;
+    }
+```
+* Can make a function work with any class with certain members. In example below, will work with any class/struct that has members _first_ and _second_:
+```
+    #include <iostream>
+    
+    template <typename T, typename U>
+    struct Pair
+    {
+        T first{};
+        U second{};
+    };
+    
+    struct Point
+    {
+        int first{};
+        int second{};
+    };
+    
+    template <typename T>
+    void print(T p) // type template parameter will match anything
+    {
+        std::cout << '[' << p.first << ", " << p.second << ']'; // will only compile if type has first and second members
+    }
+    
+    int main()
+    {
+        Pair<double, int> p1{ 4.5, 6 };
+        print(p1); // matches print(Pair<double, int>)
+    
+        std::cout << '\n';
+    
+        Point p2 { 7, 8 };
+        print(p2); // matches print(Point)
+    
+        std::cout << '\n';
+    
+        return 0;
+    }
+```
+* The standard library already has a `pair` class. Prefer this over a custom one.
+* Place template and type definitions in header file and include in necessary source files.
+
+### 13.14 — Class template argument deduction (CTAD) and deduction guides
+* In the previous section, a template argument was used to explicitly specify the types to use in the template, e.g. `std::pair<int, int> p1{ 1, 2 };`. Starting in C++17, CTAD can be used to implicitly set the types by deducing them from the initialization values, e.g. `std::pair p2{ 1, 2 };`. Note with CTAD that the template arguments are not used.
+* With CTAD, may need to use suffixes to specify type, e.g. `std::pair p1 { 3.4f, 5.6f };` is necessary to specify floats instead of doubles or `std::pair p2 { 1u, 2u };` to specify unsigned instead of signed.
+* For aggregate types (like `struct`) in C++17 a _deduction guide_ is needed for CTAD. See example below:
+```
+    template <typename T, typename U>
+    struct Pair
+    {
+        T first{};
+        U second{};
+    };
+    
+    // Here's a deduction guide for our Pair (needed in C++17 only)
+    // Pair objects initialized with arguments of type T and U should deduce to Pair<T, U>
+    template <typename T, typename U>
+    Pair(T, U) -> Pair<T, U>;
+    
+    int main()
+    {
+        Pair<int, int> p1{ 1, 2 }; // explicitly specify class template Pair<int, int> (C++11 onward)
+        Pair p2{ 1, 2 };           // CTAD used to deduce Pair<int, int> from the initializers (C++17)
+    
+        return 0;
+    }
+```
+* Can have default types for template structs which will be used if not specified. See example below:
+```
+    template <typename T=int, typename U=int> // default T and U to type int
+    struct Pair
+    {
+        T first{};
+        U second{};
+    };
+    
+    template <typename T, typename U>
+    Pair(T, U) -> Pair<T, U>;
+    
+    int main()
+    {
+        Pair<int, int> p1{ 1, 2 }; // explicitly specify class template Pair<int, int> (C++11 onward)
+        Pair p2{ 1, 2 };           // CTAD used to deduce Pair<int, int> from the initializers (C++17)
+    
+        Pair p3;                   // uses default Pair<int, int>
+    
+        return 0;
+    }
+```
+* CTAD can't be used in struct definitions:
+```
+    #include <utility> // for std::pair
+    
+    struct Foo
+    {
+        std::pair<int, int> p1{ 1, 2 }; // ok, template arguments explicitly specified
+        std::pair p2{ 1, 2 };           // compile error, CTAD can't be used in this context
+    };
+    
+    int main()
+    {
+        std::pair p3{ 1, 2 };           // ok, CTAD can be used here
+        return 0;
+    }
+```
+* CTAD can't be used in function parameters:
+```
+    #include <iostream>
+    #include <utility>
+    
+    void print(std::pair p) // compile error, CTAD can't be used here
+    {
+        std::cout << p.first << ' ' << p.second << '\n';
+    }
+    
+    int main()
+    {
+        std::pair p { 1, 2 }; // p deduced to std::pair<int, int>
+        print(p);
+    
+        return 0;
+    }
+```
+* Use a function template instead:
+```
+    #include <iostream>
+    #include <utility>
+    
+    template <typename T, typename U>
+    void print(std::pair<T, U> p)
+    {
+        std::cout << p.first << ' ' << p.second << '\n';
+    }
+    
+    int main()
+    {
+        std::pair p { 1, 2 }; // p deduced to std::pair<int, int>
+        print(p);
+    
+        return 0;
+    }
+```
+
+### 13.15 — Alias templates
+* Can use type aliases for class templates:
+```
+    #include <iostream>
+    
+    template <typename T>
+    struct Pair
+    {
+        T first{};
+        T second{};
+    };
+    
+    template <typename T>
+    void print(const Pair<T>& p)
+    {
+        std::cout << p.first << ' ' << p.second << '\n';
+    }
+    
+    int main()
+    {
+        using Point = Pair<int>; // create normal type alias
+        Point p { 1, 2 };        // compiler replaces this with Pair<int>
+    
+        print(p);
+    
+        return 0;
+    }
+```
+* Can use an alias for a class template. In example below, `Coord` is a template alias for `Pair<T>`:
+```
+    #include <iostream>
+    
+    template <typename T>
+    struct Pair
+    {
+        T first{};
+        T second{};
+    };
+    
+    // Here's our alias template
+    // Alias templates must be defined in global scope
+    template <typename T>
+    using Coord = Pair<T>; // Coord is an alias for Pair<T>
+    
+    // Our print function template needs to know that Coord's template parameter T is a type template parameter
+    template <typename T>
+    void print(const Coord<T>& c)
+    {
+        std::cout << c.first << ' ' << c.second << '\n';
+    }
+    
+    int main()
+    {
+        Coord<int> p1 { 1, 2 }; // Pre C++-20: We must explicitly specify all type template argument
+        Coord p2 { 1, 2 };      // In C++20, we can use alias template deduction to deduce the template arguments in cases where CTAD works
+    
+        std::cout << p1.first << ' ' << p1.second << '\n';
+        print(p2);
+    
+        return 0;
+    }
+```
+* Since CTAD doesn't work for function parameters, template arguments must still be explicitly defined. For example, this would not work:
+```
+    void print(const Coord& c) // won't work, missing template arguments
+    {
+        std::cout << c.first << ' ' << c.second << '\n';
+    }
+```
+
+### 13.x — Chapter 13 summary and quiz
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
