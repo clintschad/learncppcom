@@ -3451,7 +3451,7 @@ or
     }
 ```
 
-### 13.x — Chapter 13 summary and quiz
+### 13.y — Using a language reference
 
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
