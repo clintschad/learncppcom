@@ -3451,8 +3451,6 @@ or
     }
 ```
 
-### 13.y — Using a language reference
-
 ## Chapter 14 — Introduction to Classes
 ### 14.1 — Introduction to object-oriented programming
 * Procedural programming has properties (data) and behaviors (functions) separated.
@@ -3464,4 +3462,6 @@ or
     - Polymorphism
 
 ### 14.2 — Introduction to classes
+* _class invariant_ - an object condition that must be true for it to be in a valid state.
 
+Continue with section: "A more complex class invariant"
