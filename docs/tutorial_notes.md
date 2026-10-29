@@ -3464,4 +3464,128 @@ or
 ### 14.2 — Introduction to classes
 * _class invariant_ - an object condition that must be true for it to be in a valid state.
 
-Continue with section: "A more complex class invariant"
+### 14.3 — Member functions
+* Class types (classes, structs, unions) can have _member functions_ in addition to member variables.
+* Member functions must be _declared_ inside a class definition and can be _defined_ inside or outside the class definition.
+* When calling a member function, e.g. `today.print()`, `today` is the _implicit object_ passed to the `print()` member function.
+* Member functions have _implicit_ access to member variables.
+* Order of member variables or function in a class doesn't matter in C++. For example, can use a member function before it's defined:
+```
+    struct Foo
+    {
+        int z() { return m_data; } // We can access data members before they are defined
+        int x() { return y(); }    // We can access member functions before they are defined
+    
+        int m_data { y() };        // This even works in default member initializers (see warning below)
+        int y() { return 5; }
+    };
+```
+* This is how the compiler accomplishes this. For example, it turns this:
+```
+struct Foo
+    {
+        int z() { return m_data; } // m_data not declared yet
+        int x() { return y(); }    // y not declared yet
+        int y() { return 5; }
+    
+        int m_data{};
+    };
+```
+into this:
+```
+    struct Foo
+    {
+        int z(); // forward declaration of Foo::z()
+        int x(); // forward declaration of Foo::x()
+        int y(); // forward declaration of Foo::y()
+    
+        int m_data{};
+    };
+    
+    int Foo::z() { return m_data; } // m_data already declared above
+    int Foo::x() { return y(); }    // y already declared above
+    int Foo::y() { return 5; }
+```
+* However, member variables are initialized in order of declaration, so avoid using other members inside default member initializations:
+```
+    struct Bad
+    {
+        int m_bad1 { m_data }; // undefined behavior: m_bad1 initialized before m_data
+        int m_bad2 { fcn() };  // undefined behavior: m_bad2 initialized before m_data (accessed through fcn())
+    
+        int m_data { 5 };
+        int fcn() { return m_data; }
+    };
+```
+* Member functions can be overloaded:
+```
+    #include <iostream>
+    #include <string_view>
+    
+    struct Date
+    {
+        int year {};
+        int month {};
+        int day {};
+    
+        void print()
+        {
+            std::cout << year << '/' << month << '/' << day;
+        }
+    
+        void print(std::string_view prefix)
+        {
+            std::cout << prefix << year << '/' << month << '/' << day;
+        }
+    };
+    
+    int main()
+    {
+        Date today { 2020, 10, 14 };
+    
+        today.print(); // calls Date::print()
+        std::cout << '\n';
+    
+        today.print("The date is: "); // calls Date::print(std::string_view)
+        std::cout << '\n';
+    
+        return 0;
+    }
+```
+* In C++, struct can have member functions. However, avoid using constructors in structs.
+* While a class can have only member functions, it's better to use a namespace. For example, while this is possible...
+```
+    #include <iostream>
+    
+    struct Foo
+    {
+        void printHi() { std::cout << "Hi!\n"; }
+    };
+    
+    int main()
+    {
+        Foo f{};
+        f.printHi(); // requires object to call
+    
+        return 0;
+    }
+```
+* ... this is better:
+```
+    #include <iostream>
+    
+    namespace Foo
+    {
+        void printHi() { std::cout << "Hi!\n"; }
+    };
+    
+    int main()
+    {
+        Foo::printHi(); // no object needed
+    
+        return 0;
+    }
+```
+
+### 14.4 — Const class objects and const member functions
+
