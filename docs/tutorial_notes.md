@@ -3588,4 +3588,190 @@ into this:
 ```
 
 ### 14.4 — Const class objects and const member functions
+* Like how `const` variables must be initialized at creation, similarly `const` class types must be initialized at creation. For example,
+```
+    struct Date
+    {
+        int year {};
+        int month {};
+        int day {};
+    };
+    
+    int main()
+    {
+        const Date today { 2020, 10, 14 }; // const class type object
+    
+        return 0;
+    }
+```
+* `const` class object cannot call normal member functions, even if the function doesn't modify any member variables. To allow for this, a member function can be made `const`, e.g.
+```
+    #include <iostream>
+    
+    struct Date
+    {
+        int year {};
+        int month {};
+        int day {};
+    
+        // Now a const member function.
+        // Without const, the call to this function in main will cause
+        // a compilation error.
+        void print() const
+        {
+            std::cout << year << '/' << month << '/' << day;
+        }
+    };
+    
+    int main()
+    {
+        const Date today { 2020, 10, 14 }; // const
+    
+        today.print();  // ok: const object can call const member function
+    
+        return 0;
+    }
+```
+* A const member function cannot modify a member variable, or compilation will fail.
+* Const member function can be called even if object is not const. For this reason, member functions that do not modify member variables should be made const.
+* Remember that adding `const` to a function argument causes the function to treat that parameter as `const` even if the object passed to it isn't.
+* Member functions can be overloaded by one being const and other non-const. However, this is rare.
 
+### 14.5 — Public and private members and access specifiers
+* Each class member has one of three access levels: public, private, and protected. This is also _informally_ known as _access controls_.
+* Members with _public_ access level are called _public members_. These members can be accessed by other members of the same class or by code outside the class.
+* Members of a struct are public by default. For example:
+```
+    #include <iostream>
+    
+    struct Date
+    {
+        // struct members are public by default, can be accessed by anyone
+        int year {};       // public by default
+        int month {};      // public by default
+        int day {};        // public by default
+    
+        void print() const // public by default
+        {
+            // public members can be accessed in member functions of the class type
+            std::cout << year << '/' << month << '/' << day;
+        }
+    };
+    
+    // non-member function main is part of "the public"
+    int main()
+    {
+        Date today { 2020, 10, 14 }; // aggregate initialize our struct
+    
+        // public members can be accessed by the public
+        today.day = 16; // okay: the day member is public
+        today.print();  // okay: the print() member function is public
+    
+        return 0;
+    }
+```
+* Members with _private_ access level are called _private members_. These members can only be accessed by other members of the same class. Members of a class are private by default. For example:
+```
+    #include <iostream>
+    
+    class Date // now a class instead of a struct
+    {
+        // class members are private by default, can only be accessed by other members
+        int m_year {};     // private by default
+        int m_month {};    // private by default
+        int m_day {};      // private by default
+    
+        void print() const // private by default
+        {
+            // private members can be accessed in member functions
+            std::cout << m_year << '/' << m_month << '/' << m_day;
+        }
+    };
+    
+    int main()
+    {
+        Date today { 2020, 10, 14 }; // compile error: can no longer use aggregate initialization
+    
+        // private members can not be accessed by the public
+        today.m_day = 16; // compile error: the m_day member is private
+        today.print();    // compile error: the print() member function is private
+    
+        return 0;
+    }
+```
+* A class with private members is not an _aggregate_ and therefore cannot be aggregate initialized.
+* Consider naming class members with an "_m" prefix to distinguish them from local variables, function parameters, and member functions.
+* In addition to the default access level a class provides (private) or a struct provides (pbulic) _access specifiers_ can be used to explicitly set access levels for members. There are three access specifiers: `public`, `private`, and `protected`. For example:
+```
+    class Date
+    {
+    // Any members defined here would default to private
+    
+    public: // here's our public access specifier
+    
+        void print() const // public due to above public: specifier
+        {
+            // members can access other private members
+            std::cout << m_year << '/' << m_month << '/' << m_day;
+        }
+    
+    private: // here's our private access specifier
+    
+        int m_year { 2020 };  // private due to above private: specifier
+        int m_month { 14 }; // private due to above private: specifier
+        int m_day { 10 };   // private due to above private: specifier
+    };
+    
+    int main()
+    {
+        Date d{};   // cannot aggregate init. Using default member init as temp workaround
+        d.print();  // okay, main() allowed to access public members
+    
+        return 0;
+    }
+```
+* Since classes are private by default, leading `private` access specifiers are redundant. However, since classes and structs have different default access level, it is preferred to by explicit and keep the leading `private` access level if it's used.
+* Any number of access specifiers in any order is allowed. Repeated is allowed.
+* Generally avoid using access specifiers for structs since they're intended to be aggregates and aggregates only have public members.
+* In general, class member variables should be made private and member functions should be made public.
+* Objects of the same class can access each other's private members, e.g.
+```
+    #include <iostream>
+    #include <string>
+    #include <string_view>
+    
+    class Person
+    {
+    private:
+        std::string m_name{};
+    
+    public:
+        void kisses(const Person& p) const
+        {
+            std::cout << m_name << " kisses " << p.m_name << '\n';
+        }
+    
+        void setName(std::string_view name)
+        {
+            m_name = name;
+        }
+    };
+    
+    int main()
+    {
+        Person joe;
+        joe.setName("Joe");
+    
+        Person kate;
+        kate.setName("Kate");
+    
+        joe.kisses(kate);
+    
+        return 0;
+    }
+```
+* Rules of thumb when to prefer using a struct over a class:
+    - You have a simple collection of data that doesn’t benefit from restricting access.
+    - Aggregate initialization is sufficient.
+    - You have no class invariants, setup needs, or cleanup needs.
+* 
