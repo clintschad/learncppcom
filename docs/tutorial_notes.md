@@ -3774,4 +3774,317 @@ into this:
     - You have a simple collection of data that doesn’t benefit from restricting access.
     - Aggregate initialization is sufficient.
     - You have no class invariants, setup needs, or cleanup needs.
-* 
+
+### 14.6 — Access functions
+* Since class member variables are private by default, _getter_ and _setter_ functions are public functions for getting and setting these variables from outside code. For example:
+```
+    #include <iostream>
+    
+    class Date
+    {
+    private:
+        int m_year { 2020 };
+        int m_month { 10 };
+        int m_day { 14 };
+    
+    public:
+        void print()
+        {
+            std::cout << m_year << '/' << m_month << '/' << m_day << '\n';
+        }
+    
+        int getYear() const { return m_year; }        // getter for year
+        void setYear(int year) { m_year = year; }     // setter for year
+    
+        int getMonth() const  { return m_month; }     // getter for month
+        void setMonth(int month) { m_month = month; } // setter for month
+    
+        int getDay() const { return m_day; }          // getter for day
+        void setDay(int day) { m_day = day; }         // setter for day
+    };
+    
+    int main()
+    {
+        Date d{};
+        d.setYear(2021);
+        std::cout << "The year is: " << d.getYear() << '\n';
+    
+        return 0;
+    }
+```
+* Getter functions should usually be made const since they shouldn't change member variables and so both non-const and const objects can use it. Setter functions should not be const since their goal is to modify.
+* Prefer to name set and get functions with _set_ and _get_ prefixes.
+
+### 14.7 — Member functions returning references to data members
+* Member functions can return member variables by reference. This is preferable when returning by value is expensive. Below is an example:
+```
+    #include <iostream>
+    #include <string>
+    
+    class Employee
+    {
+    	std::string m_name{};
+    
+    public:
+    	void setName(std::string_view name) { m_name = name; }
+    	const std::string& getName() const { return m_name; } //  getter returns by const reference
+    };
+    
+    int main()
+    {
+    	Employee joe{}; // joe exists until end of function
+    	joe.setName("Joe");
+    
+    	std::cout << joe.getName(); // returns joe.m_name by reference
+    
+    	return 0;
+    }
+```
+* Need to keep in mind lifespan of object when returning by reference. For example,
+```
+    #include <iostream>
+    #include <string>
+    #include <string_view>
+    
+    class Employee
+    {
+    	std::string m_name{};
+    
+    public:
+    	void setName(std::string_view name) { m_name = name; }
+    	const std::string& getName() const { return m_name; } //  getter returns by const reference
+    };
+    
+    // createEmployee() returns an Employee by value (which means the returned value is an rvalue)
+    Employee createEmployee(std::string_view name)
+    {
+    	Employee e;
+    	e.setName(name);
+    	return e;
+    }
+    
+    int main()
+    {
+    	// Case 1: okay: use returned reference to member of rvalue class object in same expression
+    	std::cout << createEmployee("Frank").getName();
+    
+    	// Case 2: bad: save returned reference to member of rvalue class object for use later
+    	const std::string& ref { createEmployee("Garbo").getName() }; // reference becomes dangling when return value of createEmployee() is destroyed
+    	std::cout << ref; // undefined behavior
+    
+    	// Case 3: okay: copy referenced value to local variable for use later
+    	std::string val { createEmployee("Hans").getName() }; // makes copy of referenced member
+    	std::cout << val; // okay: val is independent of referenced member
+    
+    	return 0;
+    }
+```
+* Prefer to use the return value of a member function that returns by reference immediately, to avoid issues with dangling references when the implicit object is an rvalue.
+* Do not return non-const references to private data members. This will allow direct manipulation of member variables which defeats the point of public and private access. For example,
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_value{ 4 }; // private member
+    
+    public:
+        int& value() { return m_value; } // returns a non-const reference (don't do this)
+    };
+    
+    int main()
+    {
+        Foo f{};                // f.m_value is initialized to default value 4
+        f.value() = 5;          // The equivalent of m_value = 5
+        std::cout << f.value(); // prints 5
+    
+        return 0;
+    }
+```
+* Const member functions can only return const references to member variables.
+
+### 14.8 — The benefits of data hiding (encapsulation)
+* Goal is to hide or abstract away details of the inner workings of the class and expose a simple interface for users of the class through the public functions and variables.
+* The public member functions of a class are the _public interface_ for a class. This should be as stable as possible so code that uses it doesn't break.
+* Data hiding makes it possible to change implementation details without breaking existing programs. For example, if this is our program...
+```
+    #include <iostream>
+    
+    class Something
+    {
+    private:
+        int m_value1 {};
+        int m_value2 {};
+        int m_value3 {};
+    
+    public:
+        void setValue1(int value) { m_value1 = value; }
+        int getValue1() const { return m_value1; }
+    };
+    
+    int main()
+    {
+        Something something;
+        something.setValue1(5);
+        std::cout << something.getValue1() << '\n';
+    }
+```
+* ...class implementation can be changed without changing code in main:
+```
+    #include <iostream>
+    
+    class Something
+    {
+    private:
+        int m_value[3]; // note: we changed the implementation of this class!
+    
+    public:
+        // We have to update any member functions to reflect the new implementation
+        void setValue1(int value) { m_value[0] = value; }
+        int getValue1() const { return m_value[0]; }
+    };
+    
+    int main()
+    {
+        // But our programs that use the class do not need to be updated!
+        Something something;
+        something.setValue1(5);
+        std::cout << something.getValue1() << '\n';
+    }
+```
+* Since a member variable can only be changed by a member function, it's easier to find why a member variable has an incorrect value by debugging the member function that changes it. If other code was changing the member variable, all these instances would need to be inspected.
+* Prefer implementing functions as non-members when possible, especially functions that contain application specific data or logic.
+* More tips on when to prefer making a function a member vs non-member:
+    - Use a member function when you have to. C++ requires that certain kinds of functions be defined as members. We’ll see one example in the next lesson, when we talk about constructors. Others include destructors, virtual functions, and certain operators.
+    - Prefer a member function when the function needs access to private (or protected) data that should not be exposed.
+    - Prefer a non-member function otherwise (especially for functions that do not modify the state of the object).
+    - Adding access functions means creating one or two new member functions (getter and possibly setter), increasing the size and complexity of the classes interface. This may not be worth it unless you can use these new access functions in multiple places.
+    - Do not add access functions to data that should not be directly accessible (e.g. because it’s internal state) or that would allow the user to violate a class invariant.
+* When declaring the members in a class, declare public members first, protected members next, and private members last. This spotlights the public interface and de-emphasizes implementation details.
+
+### 14.9 — Introduction to constructors
+* When a class type (e.g. class or struct) has private data, it is no longer an aggregate type. This means aggregate initialization (e.g. `Foo foo{3,28};`) cannot be used.
+* Aggregates are not allowed to have constructors. Adding a constructor to an aggregates makes it no longer an aggregate.
+* A _constructor_ is a special member function of a class that is automatically called when an object of that class is instantiated. This function typically initializes member variables and other setup functionality (error checking, file/database opening, etc).
+* Constructors:
+    * have same name as class,
+    * have no return type, not even `void`,
+    * cannot be `const`, since they need to initialize the object,
+    * and are usually public.
+* Example of a simple constructor function ...
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x {};
+        int m_y {};
+    
+    public:
+        Foo(int x, int y) // here's our constructor function that takes two initializers
+        {
+            std::cout << "Foo(" << x << ", " << y << ") constructed\n";
+        }
+    
+        void print() const
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ")\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo{ 6, 7 }; // calls Foo(int, int) constructor
+        foo.print();
+    
+        return 0;
+    }
+```
+* ... with the example above printing 
+```
+    Foo(6, 7) constructed
+    Foo(0, 0)
+```
+
+### 14.10 — Constructor member initializer lists
+* Below is an example of a `member initialization list`. Braces or parentheses can be used, but equal sign cannot be used ...
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x {};
+        int m_y {};
+    
+    public:
+        Foo(int x, int y)
+            : m_x { x }, m_y { y } // member initialization list
+        {
+            std::cout << "Foo(" << x << ", " << y << ") constructed\n";
+        }
+    
+        void print() const
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ")\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo{ 6, 7 };
+        foo.print();
+    
+        return 0;
+    }
+```
+* ... which prints out ...
+```
+    Foo(6, 7) constructed
+    Foo(6, 7)
+```
+* Ensure member initialization list matches the order that the members are defined in the class.
+* If possible, avoid initializing a member using another member's value.
+* Member initialization precedence: member initialization used if present, then default member initialization used if present. For example ...
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x {};    // default member initializer (will be ignored)
+        int m_y { 2 }; // default member initializer (will be used)
+        int m_z;      // no initializer
+    
+    public:
+        Foo(int x)
+            : m_x { x } // member initializer list
+        {
+            std::cout << "Foo constructed\n";
+        }
+    
+        void print() const
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ", " << m_z << ")\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo { 6 };
+        foo.print();
+    
+        return 0;
+    }
+```
+* ... prints out ...
+```
+    Foo constructed
+    Foo(6, 2, -858993460)
+```
+* Prefer using member initializer list to initialize members over assigning values in the body of the constructor.
+* Constructor function bodies can be empty.
+
+### 14.11 — Default constructors and default arguments
