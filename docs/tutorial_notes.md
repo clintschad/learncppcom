@@ -4088,3 +4088,153 @@ into this:
 * Constructor function bodies can be empty.
 
 ### 14.11 — Default constructors and default arguments
+* _Default constructor_ - constructor with no arguements.
+* The default constructor is called for both value initialization and default initialization:
+```
+    Foo foo{}; // value initialization, calls Foo() default constructor
+    Foo foo2;  // default initialization, calls Foo() default constructor
+```
+* Prefer value initialization for all class types (classes and structs).
+* Constructors like other functions can have default arguments. If all arguments for a constructor are default arguments, then it is possible to call the constructor without any arguments and thus the constructor is a default constructor. For example ...
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x { };
+        int m_y { };
+    
+    public:
+        Foo(int x=0, int y=0) // has default arguments
+            : m_x { x }
+            , m_y { y }
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ") constructed\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo1{};     // calls Foo(int, int) constructor using default arguments
+        Foo foo2{6, 7}; // calls Foo(int, int) constructor
+    
+        return 0;
+    }
+```
+* ... outputs
+```
+    Foo(0, 0) constructed
+    Foo(6, 7) constructed
+```
+* Classes can have overloaded constructors. This allows the object to be constructed differently depending on the initialization arguments:
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x {};
+        int m_y {};
+    
+    public:
+        Foo() // default constructor
+        {
+            std::cout << "Foo constructed\n";
+        }
+    
+        Foo(int x, int y) // non-default constructor
+            : m_x { x }, m_y { y }
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ") constructed\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo1{};     // Calls Foo() constructor
+        Foo foo2{6, 7}; // Calls Foo(int, int) constructor
+    
+        return 0;
+    }
+```
+* However, a class should only have one _default_ constructor because the compiler will not know which default constructor to use. This includes constructors using only default arguments since they are also default constructors.
+* Classes with no user-supplied constructor will be given an _implicit default constructor_ by the compiler.
+* `= default` can be used to generate an explicit default constructor:
+```
+    #include <iostream>
+    
+    class Foo
+    {
+    private:
+        int m_x {};
+        int m_y {};
+    
+    public:
+        Foo() = default; // generates an explicitly defaulted default constructor
+    
+        Foo(int x, int y)
+            : m_x { x }, m_y { y }
+        {
+            std::cout << "Foo(" << m_x << ", " << m_y << ") constructed\n";
+        }
+    };
+    
+    int main()
+    {
+        Foo foo{}; // calls Foo() default constructor
+    
+        return 0;
+    }
+    ```
+    * Prefer an explicitly defaulted default constructor (= default) over a default constructor with an empty body.
+```
+* Only use a default constructor when it makes sense. For example, it may make sense to have a default constructor for a `Fraction` class, so the user can create a `Fraction` object with no user-defined values. However, it may not make sense to have an `Employee` class with a default constructor since the employee name should always be defined by the user. In this case, the compiler will error if the user tries to instantiate an `Employee` object with no name:
+```
+    Employee e1 { "Joe", 1 };
+    e1.print();
+
+    Employee e2 {}; // compile error: no matching constructor
+    e2.print();
+```
+
+### 14.12 — Delegating constructors
+* Constructors can call other member functions.
+* However, do not call a constructor from another member function.
+* A constructor can delegate to another constructor. This is useful when a constructor with fewer arguments is called, which can then pass additional default values to another constructor that takes more arguments. For example,
+```
+    #include <iostream>
+    #include <string>
+    #include <string_view>
+    
+    class Employee
+    {
+    private:
+        std::string m_name { "???" };
+        int m_id { 0 };
+    
+    public:
+        Employee(std::string_view name)
+            : Employee{ name, 0 } // delegate initialization to Employee(std::string_view, int) constructor
+        {
+        }
+    
+        Employee(std::string_view name, int id)
+            : m_name{ name }, m_id { id } // actually initializes the members
+        {
+            std::cout << "Employee " << m_name << " created\n";
+        }
+    
+    };
+    
+    int main()
+    {
+        Employee e1{ "James" };
+        Employee e2{ "Dave", 42 };
+    }
+```
+* In the code above, after the "delegated" constructor (one with more arguments) is called, control is returned to the body of delegating constructor that "called" it. Here, the body is empty.
+* Prefer to use more default arguments to reduce the number of constructors in the class.
+
+### 14.13 — Temporary class objects
+* 
